@@ -2,7 +2,7 @@
 
 Convierte un brief de marketing en un video vertical con voz, texto animado y subtítulos, usando tus propias API keys. Sin suscripción y sin intermediarios: tú pones la key, tú pagas el consumo.
 
-Estado: **fases 0 a 3 completadas** (2026-11-06). Un brief real genera un guion validado, siete ilustraciones en 9:16 y siete clips de voz con timestamps por palabra. Falta el render que los une en un MP4.
+Estado: **fases 0 a 4 completadas** (2026-11-06). El pipeline funciona de punta a punta: un brief real produce un MP4 de 1080x1920 con voz, texto animado y subtítulos sincronizados.
 
     brief → guion (Vertex/Gemini) → imágenes (Vertex/Nano Banana) → voz (MiniMax) → render (Remotion)
 
@@ -79,7 +79,7 @@ infra/            docker-compose para self-host
 | F1 | Contrato `VideoPlan` + validador con 10 reglas | completada |
 | F2 | Guion de punta a punta con Gemini real | completada y verificada |
 | F3 | Imágenes (Vertex/MiniMax) y voz (MiniMax) | completada y verificada |
-| F4 | Render con Remotion en worker | en curso |
+| F4 | Render con Remotion en worker | completada |
 | F5 | Variantes 1:1 y 16:9, bilingüe, música, costos | pendiente |
 | F6 | Publicación: demo, video y post en X | pendiente |
 

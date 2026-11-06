@@ -12,6 +12,8 @@ import {
 import type { SceneProps, VideoProps } from './types';
 
 const SAFE_BOTTOM = 320;
+// Chrome headless cae en serif si no se declara familia: se nota mucho.
+const FONT = "Inter, 'Helvetica Neue', Helvetica, Arial, 'Segoe UI', sans-serif";
 
 /** Acepta URLs absolutas o rutas dentro de public/ (lo normal en el render). */
 function resolveSrc(src: string): string {
@@ -74,6 +76,7 @@ function ScreenText({ lines, accent }: { lines: readonly string[]; accent: strin
               opacity,
               transform: `translateY(${y}px)`,
               color: index === lines.length - 1 ? accent : '#ffffff',
+              fontFamily: FONT,
               fontSize: 96,
               lineHeight: 1.02,
               fontWeight: 800,
@@ -116,8 +119,9 @@ function Karaoke({
           margin: '0 auto',
           maxWidth: 900,
           textAlign: 'center',
-          fontSize: 54,
-          fontWeight: 700,
+          fontFamily: FONT,
+          fontSize: 52,
+          fontWeight: 600,
           lineHeight: 1.25,
           textShadow: '0 4px 18px rgba(0,0,0,0.75)',
         }}
@@ -186,7 +190,7 @@ export function EscenaiVideo({ scenes, colorFondo, colorTexto, colorAcento }: Vi
         );
       })}
       <AbsoluteFill style={{ justifyContent: 'flex-end', padding: 24, pointerEvents: 'none' }}>
-        <span style={{ color: colorTexto, opacity: 0.25, fontSize: 22, letterSpacing: '0.3em' }}>
+        <span style={{ color: colorTexto, opacity: 0.25,      fontFamily: FONT, fontSize: 22, letterSpacing: '0.3em' }}>
           ESCENAI
         </span>
       </AbsoluteFill>
