@@ -45,6 +45,11 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [loadingVoice, setLoadingVoice] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [voiceTotal, setVoiceTotal] = useState<number | null>(null);
+  const [imageBatch, setImageBatch] = useState<string | null>(null);
+  const [audioBatch, setAudioBatch] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loadingRender, setLoadingRender] = useState(false);
+  const [renderError, setRenderError] = useState<string | null>(null);
 
   function update<K extends keyof BriefState>(key: K, value: BriefState[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
@@ -60,6 +65,9 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     setVoice({});
     setVoiceError(null);
     setVoiceTotal(null);
+    setVideoUrl(null);
+    setImageBatch(null);
+    setAudioBatch(null);
 
     try {
       const response = await fetch('/api/script', {
@@ -98,6 +106,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         body: JSON.stringify({ plan }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
+        batchId?: string;
         assets?: readonly { sceneId: string; url: string }[];
         code?: string;
         message?: string;
@@ -106,6 +115,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         setImageError(payload.message ?? payload.code ?? dict.common.error);
         return;
       }
+      setImageBatch(payload.batchId ?? null);
       setImages(Object.fromEntries(payload.assets.map((asset) => [asset.sceneId, asset.url])));
     } catch {
       setImageError(dict.common.error);
@@ -125,6 +135,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         body: JSON.stringify({ plan }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
+        batchId?: string;
         clips?: readonly { sceneId: string; url: string }[];
         timeline?: { totalMs: number; objetivoMs: number; exceedsBudget: boolean };
         code?: string;
@@ -134,12 +145,40 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         setVoiceError(payload.message ?? payload.code ?? dict.common.error);
         return;
       }
+      setAudioBatch(payload.batchId ?? null);
       setVoice(Object.fromEntries(payload.clips.map((clip) => [clip.sceneId, clip.url])));
       setVoiceTotal(payload.timeline?.totalMs ?? null);
     } catch {
       setVoiceError(dict.common.error);
     } finally {
       setLoadingVoice(false);
+    }
+  }
+
+  async function renderVideo() {
+    if (plan === null || imageBatch === null || audioBatch === null) return;
+    setLoadingRender(true);
+    setRenderError(null);
+    try {
+      const response = await fetch('/api/render', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan, imageBatch, audioBatch }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        url?: string;
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.url === undefined) {
+        setRenderError(payload.message ?? payload.code ?? dict.common.error);
+        return;
+      }
+      setVideoUrl(payload.url);
+    } catch {
+      setRenderError(dict.common.error);
+    } finally {
+      setLoadingRender(false);
     }
   }
 
@@ -241,6 +280,15 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
               </button>
               <button
                 type="button"
+                onClick={renderVideo}
+                disabled={loadingRender || imageBatch === null || audioBatch === null}
+                title={imageBatch === null || audioBatch === null ? dict.create.renderNeedsAssets : undefined}
+                className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[#04120a] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {loadingRender ? dict.create.rendering : dict.create.render}
+              </button>
+              <button
+                type="button"
                 onClick={generateVoice}
                 disabled={loadingVoice}
                 className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
@@ -260,6 +308,20 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
             <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
               {voiceError}
             </p>
+          )}
+
+          {renderError !== null && (
+            <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
+              {renderError}
+            </p>
+          )}
+
+          {videoUrl !== null && (
+            <video
+              controls
+              src={videoUrl}
+              className="mt-6 w-full max-w-[320px] rounded-xl border border-[var(--line)]"
+            />
           )}
 
           {voiceTotal !== null && (

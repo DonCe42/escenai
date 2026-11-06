@@ -55,6 +55,9 @@ export interface Dictionary {
     readonly generatingVoice: string;
     readonly voiceTotal: string;
     readonly voiceOverBudget: string;
+    readonly render: string;
+    readonly rendering: string;
+    readonly renderNeedsAssets: string;
   };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
@@ -120,6 +123,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       generatingVoice: 'Generando voz…',
       voiceTotal: 'Duración real de la voz',
       voiceOverBudget: 'se pasa del objetivo: hay que recortar texto',
+      render: 'Renderizar video',
+      rendering: 'Renderizando… (1-3 min)',
+      renderNeedsAssets: 'Genera primero las imágenes y la voz',
     },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
@@ -183,6 +189,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       generatingVoice: 'Generating voice…',
       voiceTotal: 'Real voice duration',
       voiceOverBudget: 'over budget: trim the script',
+      render: 'Render video',
+      rendering: 'Rendering… (1-3 min)',
+      renderNeedsAssets: 'Generate images and voice first',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

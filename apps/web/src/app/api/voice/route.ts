@@ -54,6 +54,15 @@ export async function POST(request: Request): Promise<Response> {
         result.mimeType,
       );
 
+      // Los timestamps alimentan el karaoke del render: se guardan junto al audio.
+      await storage.put(
+        `audio/${workspace.id}/${batchId}/${scene.id}.json`,
+        new TextEncoder().encode(
+          JSON.stringify({ durationMs: result.durationMs, words: result.words }),
+        ),
+        'application/json',
+      );
+
       audios.push({ sceneId: scene.id, durationMs: result.durationMs, words: result.words });
       clips.push({
         sceneId: scene.id,
@@ -66,6 +75,7 @@ export async function POST(request: Request): Promise<Response> {
     const timeline = buildTimeline(plan, audios);
 
     return NextResponse.json({
+      batchId,
       clips,
       timeline: {
         totalMs: timeline.totalMs,

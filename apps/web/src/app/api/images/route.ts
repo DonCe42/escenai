@@ -104,7 +104,7 @@ export async function POST(request: Request): Promise<Response> {
       return { sceneId: scene.id, url: await storage.signedUrl(ref, 3600) };
     });
 
-    return NextResponse.json({ assets: [...assets, ...generated] });
+    return NextResponse.json({ batchId, assets: [...assets, ...generated] });
   } catch (error) {
     if (error instanceof MissingSecretError || error instanceof ProviderNotConfiguredError) {
       return NextResponse.json({ code: 'KEY_REQUIRED', provider: 'google-vertex' }, { status: 412 });

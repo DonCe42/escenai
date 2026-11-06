@@ -56,6 +56,13 @@ export default tseslint.config(
     },
   },
   {
+    // Los scripts de línea de comandos sí hablan por consola: es su interfaz.
+    files: ['**/scripts/**/*.mjs', '**/remotion.config.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
     files: ['**/*.d.ts'],
     rules: {
       '@typescript-eslint/triple-slash-reference': 'off',

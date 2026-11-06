@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { MinimaxSpeech } from '../src/providers/minimax/speech';
 
+// MiniMax manda trozos, no palabras: "Ho","la"," ","mun","do"
 const words = [
   {
     text: 'Hola mundo',
     timestamped_words: [
-      { word: 'Hola', time_begin: 0, time_end: 420 },
-      { word: 'mundo', time_begin: 440, time_end: 900 },
+      { word: 'Ho', time_begin: 0, time_end: 180 },
+      { word: 'la', time_begin: 180, time_end: 420 },
+      { word: ' ', time_begin: 420, time_end: 440 },
+      { word: 'mun', time_begin: 440, time_end: 700 },
+      { word: 'do', time_begin: 700, time_end: 900 },
     ],
   },
 ];

@@ -31,18 +31,49 @@ interface TtsResponse {
   readonly base_resp?: { readonly status_code?: number; readonly status_msg?: string };
 }
 
+/**
+ * MiniMax entrega los timestamps por trozos ("ca", "f", "é"), no por palabras.
+ * Los trozos concatenados reproducen el texto exacto, incluidos los espacios,
+ * así que se agrupan hasta el siguiente separador. Sin esto el karaoke muestra
+ * "ca f é" en pantalla.
+ */
 function flattenWords(segments: readonly Segment[]): readonly WordTiming[] {
   const words: WordTiming[] = [];
+
   for (const segment of segments) {
-    for (const word of segment.timestamped_words ?? []) {
-      if (word.word === undefined) continue;
-      words.push({
-        word: word.word,
-        startMs: word.time_begin ?? 0,
-        endMs: word.time_end ?? 0,
-      });
+    const chunks = segment.timestamped_words ?? [];
+    const hasSeparators = chunks.some((chunk) => (chunk.word ?? '').trim() === '');
+
+    if (!hasSeparators) {
+      for (const chunk of chunks) {
+        if (chunk.word === undefined) continue;
+        words.push({ word: chunk.word, startMs: chunk.time_begin ?? 0, endMs: chunk.time_end ?? 0 });
+      }
+      continue;
     }
+
+    let current = '';
+    let startMs = -1;
+    let endMs = 0;
+
+    for (const chunk of chunks) {
+      const piece = chunk.word ?? '';
+      if (piece.trim().length === 0) {
+        if (current.length > 0) {
+          words.push({ word: current, startMs, endMs });
+          current = '';
+          startMs = -1;
+        }
+        continue;
+      }
+      if (current.length === 0) startMs = chunk.time_begin ?? 0;
+      current += piece;
+      endMs = chunk.time_end ?? endMs;
+    }
+
+    if (current.length > 0) words.push({ word: current, startMs, endMs });
   }
+
   return words;
 }
 
