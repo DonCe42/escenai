@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { PlanIssue, VideoPlan } from '@escenai/core';
 import type { Dictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/locale';
@@ -33,6 +33,20 @@ const INITIAL: BriefState = {
   duracionObjetivoS: 45,
 };
 
+function useElapsed(active: boolean): number {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!active) {
+      setSeconds(0);
+      return;
+    }
+    const startedAt = Date.now();
+    const timer = setInterval(() => setSeconds(Math.floor((Date.now() - startedAt) / 1000)), 1000);
+    return () => clearInterval(timer);
+  }, [active]);
+  return seconds;
+}
+
 export function BriefForm({ locale, dict }: BriefFormProps) {
   const [brief, setBrief] = useState<BriefState>(INITIAL);
   const [loading, setLoading] = useState(false);
@@ -50,6 +64,8 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [loadingRender, setLoadingRender] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
+  const [compacting, setCompacting] = useState(false);
+  const [compactError, setCompactError] = useState<string | null>(null);
 
   function update<K extends keyof BriefState>(key: K, value: BriefState[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
@@ -155,6 +171,38 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     }
   }
 
+  async function compact() {
+    if (plan === null) return;
+    setCompacting(true);
+    setCompactError(null);
+    try {
+      const response = await fetch('/api/script/compact', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan, duracionObjetivoS: plan.duracionObjetivoS }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        plan?: VideoPlan;
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.plan === undefined) {
+        setCompactError(payload.message ?? payload.code ?? dict.common.error);
+        return;
+      }
+      // Las imágenes siguen sirviendo (los prompts no cambian); la voz hay que rehacerla.
+      setPlan(payload.plan);
+      setVoice({});
+      setVoiceTotal(null);
+      setAudioBatch(null);
+      setVideoUrl(null);
+    } catch {
+      setCompactError(dict.common.error);
+    } finally {
+      setCompacting(false);
+    }
+  }
+
   async function renderVideo() {
     if (plan === null || imageBatch === null || audioBatch === null) return;
     setLoadingRender(true);
@@ -181,6 +229,11 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       setLoadingRender(false);
     }
   }
+
+  const elapsedImages = useElapsed(loadingImages);
+  const elapsedVoice = useElapsed(loadingVoice);
+  const elapsedRender = useElapsed(loadingRender);
+  const busy = loading || loadingImages || loadingVoice || loadingRender;
 
   const total = plan?.escenas.reduce((sum, scene) => sum + scene.duracionEstimadaS, 0) ?? 0;
 
@@ -273,34 +326,44 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
               <button
                 type="button"
                 onClick={generateImages}
-                disabled={loadingImages}
+                disabled={busy}
                 className="rounded-lg border border-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-[#04120a] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loadingImages ? dict.create.generatingImages : dict.create.generateImages}
+                {loadingImages ? `${dict.create.generatingImages} ${elapsedImages}s` : dict.create.generateImages}
               </button>
               <button
                 type="button"
                 onClick={renderVideo}
-                disabled={loadingRender || imageBatch === null || audioBatch === null}
+                disabled={busy || imageBatch === null || audioBatch === null}
                 title={imageBatch === null || audioBatch === null ? dict.create.renderNeedsAssets : undefined}
                 className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[#04120a] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loadingRender ? dict.create.rendering : dict.create.render}
+                {loadingRender ? `${dict.create.rendering} ${elapsedRender}s` : dict.create.render}
               </button>
               <button
                 type="button"
                 onClick={generateVoice}
-                disabled={loadingVoice}
+                disabled={busy}
                 className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {loadingVoice ? dict.create.generatingVoice : dict.create.generateVoice}
+                {loadingVoice ? `${dict.create.generatingVoice} ${elapsedVoice}s` : dict.create.generateVoice}
               </button>
             </div>
           </div>
 
+          {(loadingImages || loadingVoice || loadingRender) && (
+            <p className="mt-4 text-xs text-[var(--muted)]">{dict.create.slowHint}</p>
+          )}
+
           {imageError !== null && (
             <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
               {imageError}
+            </p>
+          )}
+
+          {compactError !== null && (
+            <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
+              {compactError}
             </p>
           )}
 
@@ -329,6 +392,16 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
               {dict.create.voiceTotal}: {(voiceTotal / 1000).toFixed(1)} s
               {voiceTotal > plan.duracionObjetivoS * 1000 * 1.15 && (
                 <span className="ml-2 text-amber-300">{dict.create.voiceOverBudget}</span>
+              )}
+              {voiceTotal > plan.duracionObjetivoS * 1000 * 1.15 && (
+                <button
+                  type="button"
+                  onClick={compact}
+                  disabled={compacting || busy}
+                  className="ml-3 rounded-md border border-amber-400/50 px-2 py-1 text-[11px] font-semibold text-amber-200 transition hover:bg-amber-400/10 disabled:opacity-40"
+                >
+                  {compacting ? dict.create.compacting : dict.create.compact}
+                </button>
               )}
             </p>
           )}

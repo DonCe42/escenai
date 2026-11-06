@@ -13,7 +13,9 @@ export * from './application/ports/index';
 
 // Casos de uso
 export * from './application/use-cases/generate-script';
+export * from './application/use-cases/compact-script';
 
 // Prompts (versionados con el contrato)
 export * from './application/prompts/script-prompt';
+export * from './application/prompts/compact-prompt';
 export * from './application/prompts/default-style-token';

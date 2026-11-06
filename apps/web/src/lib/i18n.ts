@@ -58,6 +58,9 @@ export interface Dictionary {
     readonly render: string;
     readonly rendering: string;
     readonly renderNeedsAssets: string;
+    readonly slowHint: string;
+    readonly compact: string;
+    readonly compacting: string;
   };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
@@ -126,6 +129,10 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       render: 'Renderizar video',
       rendering: 'Renderizando… (1-3 min)',
       renderNeedsAssets: 'Genera primero las imágenes y la voz',
+      slowHint:
+        'Esto llama a los proveedores de verdad: imágenes 3-5 min, voz ~20 s, render 3-5 min. El contador no se detiene hasta que termine.',
+      compact: 'Recortar guion',
+      compacting: 'Recortando…',
     },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
@@ -192,6 +199,10 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       render: 'Render video',
       rendering: 'Rendering… (1-3 min)',
       renderNeedsAssets: 'Generate images and voice first',
+      slowHint:
+        'This calls the real providers: images 3-5 min, voice ~20 s, render 3-5 min. The counter keeps running until it finishes.',
+      compact: 'Trim script',
+      compacting: 'Trimming…',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },
