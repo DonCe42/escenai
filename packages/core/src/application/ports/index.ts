@@ -13,3 +13,4 @@ export type {
   ProviderId,
 } from './secret-store.port';
 export type { ClockPort } from './clock.port';
+export type { KeyVerifierPort, KeyCheck, KeyCheckReason } from './key-verifier.port';

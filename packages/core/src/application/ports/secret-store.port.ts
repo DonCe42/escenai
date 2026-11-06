@@ -32,4 +32,6 @@ export interface SecretStorePort {
   read(workspaceId: string, provider: ProviderId): Promise<string>;
   list(workspaceId: string): Promise<readonly SecretSummary[]>;
   remove(workspaceId: string, provider: ProviderId): Promise<void>;
+  /** Marca el resultado de la verificación contra el proveedor. */
+  markVerified(workspaceId: string, provider: ProviderId, verified: boolean): Promise<void>;
 }

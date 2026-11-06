@@ -124,6 +124,12 @@ export class AesGcmSecretStore implements SecretStorePort {
     await this.repository.delete(workspaceId, provider);
   }
 
+  async markVerified(workspaceId: string, provider: ProviderId, verified: boolean): Promise<void> {
+    const stored = await this.repository.findByProvider(workspaceId, provider);
+    if (stored === null) throw new MissingSecretError(provider);
+    await this.repository.upsert({ ...stored, verified });
+  }
+
   private async getKey(): Promise<CryptoKey> {
     if (this.cachedKey !== null) return this.cachedKey;
 

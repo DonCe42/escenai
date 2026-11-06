@@ -29,6 +29,9 @@ export interface Dictionary {
     readonly demoBanner: string;
     readonly missingMasterKey: string;
     readonly maskedNote: string;
+    readonly verifiedOk: string;
+    readonly verifiedFailed: string;
+    readonly verified: string;
   };
   readonly create: {
     readonly title: string;
@@ -84,6 +87,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       missingMasterKey:
         'Falta MASTER_KEY en el entorno. Genera una con: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
       maskedNote: 'Solo mostramos los últimos 4 caracteres.',
+      verifiedOk: 'Key verificada contra el proveedor.',
+      verifiedFailed: 'Se guardó, pero el proveedor la rechazó:',
+      verified: 'Verificada',
     },
     create: {
       title: 'Nuevo video',
@@ -138,6 +144,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       missingMasterKey:
         'MASTER_KEY is missing. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
       maskedNote: 'Only the last 4 characters are shown.',
+      verifiedOk: 'Key verified against the provider.',
+      verifiedFailed: 'Saved, but the provider rejected it:',
+      verified: 'Verified',
     },
     create: {
       title: 'New video',

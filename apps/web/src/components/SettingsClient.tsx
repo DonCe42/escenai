@@ -50,8 +50,12 @@ export function SettingsClient({
         body: JSON.stringify({ provider, apiKey }),
       });
 
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        check?: { ok: boolean; reason?: string; detail?: string };
+      };
+
       if (!response.ok) {
-        const payload = (await response.json().catch(() => ({}))) as { error?: string };
         if (payload.error === 'MASTER_KEY_MISSING') {
           setError(dict.settings.missingMasterKey);
         } else {
@@ -61,7 +65,11 @@ export function SettingsClient({
       }
 
       setApiKey('');
-      setMessage(dict.settings.saved);
+      if (payload.check?.ok === true) {
+        setMessage(dict.settings.verifiedOk);
+      } else {
+        setError(`${dict.settings.verifiedFailed} ${payload.check?.detail ?? ''}`.trim());
+      }
       router.refresh();
     } catch {
       setError(dict.common.error);
@@ -170,7 +178,7 @@ export function SettingsClient({
                   <p className="text-sm font-medium capitalize">{secret.provider}</p>
                   <p className="mt-0.5 font-mono text-xs text-[var(--muted)]">
                     {secret.masked} · {formatStamp(secret.updatedAt)} ·{' '}
-                    {secret.verified ? dict.settings.saved : dict.settings.notVerified}
+                    {secret.verified ? dict.settings.verified : dict.settings.notVerified}
                   </p>
                 </div>
                 <button

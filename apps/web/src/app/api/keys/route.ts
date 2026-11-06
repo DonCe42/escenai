@@ -49,7 +49,13 @@ export async function POST(request: Request) {
 
   try {
     const secret = await container.secrets.save(workspace.id, provider, apiKey);
-    return NextResponse.json({ secret }, { status: 201 });
+
+    // Guardar y verificar son pasos distintos: si el proveedor rechaza la key,
+    // el usuario tiene que enterarse aquí y no tres pantallas más adelante.
+    const check = await container.verifier.verify(provider, apiKey);
+    if (check.ok) await container.secrets.markVerified(workspace.id, provider, true);
+
+    return NextResponse.json({ secret: { ...secret, verified: check.ok }, check }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'UNKNOWN';
     return NextResponse.json({ error: message }, { status: 400 });

@@ -2,11 +2,12 @@ import { join } from 'node:path';
 import {
   AesGcmSecretStore,
   FileSecretRepository,
+  GoogleKeyVerifier,
   GoogleTextModel,
   SystemClock,
 } from '@escenai/adapters';
 import { ProviderNotConfiguredError } from '@escenai/core';
-import type { ProviderId, SecretStorePort, TextModelPort } from '@escenai/core';
+import type { KeyVerifierPort, ProviderId, SecretStorePort, TextModelPort } from '@escenai/core';
 
 export type AppMode = 'demo' | 'supabase';
 
@@ -17,6 +18,7 @@ export interface Container {
   /** El modelo se construye por workspace porque la key se descifra en cada llamada. */
   readonly textModel: (workspaceId: string) => TextModelPort;
   readonly keyFor: (workspaceId: string, provider: ProviderId) => Promise<string>;
+  readonly verifier: KeyVerifierPort;
 }
 
 /**
@@ -45,6 +47,7 @@ export function createContainer(): Container {
     secrets,
     masterKeyMissing,
     keyFor,
+    verifier: new GoogleKeyVerifier(),
     textModel: (workspaceId: string) =>
       new GoogleTextModel({
         getApiKey: () => keyFor(workspaceId, 'google'),
