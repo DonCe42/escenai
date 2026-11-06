@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { PlanIssue, VideoPlan } from '@escenai/core';
+import { ConfirmDialog } from './ConfirmDialog';
 import type { Dictionary } from '@/lib/i18n';
 import type { Locale } from '@/lib/locale';
 
@@ -65,6 +66,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [loadingRender, setLoadingRender] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [compacting, setCompacting] = useState(false);
+  const [pendingRegen, setPendingRegen] = useState(false);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [compactError, setCompactError] = useState<string | null>(null);
 
@@ -130,7 +132,16 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     }
   }
 
-  async function generateImages() {
+  function generateImages() {
+    if (plan === null) return;
+    if (imageBatch !== null) {
+      setPendingRegen(true);
+      return;
+    }
+    void runImages();
+  }
+
+  async function runImages() {
     if (plan === null) return;
     setLoadingImages(true);
     setImageError(null);
@@ -260,6 +271,20 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const elapsedVoice = useElapsed(loadingVoice);
   const elapsedRender = useElapsed(loadingRender);
   const busy = loading || loadingImages || loadingVoice || loadingRender;
+
+  useEffect(() => {
+    const written = [brief.que, brief.aQuien, brief.queDebeSentir, brief.queDebeHacer].some(
+      (value) => value.trim().length > 3,
+    );
+    if (plan !== null || !written) return;
+
+    const handler = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [brief, plan]);
 
   const total = plan?.escenas.reduce((sum, scene) => sum + scene.duracionEstimadaS, 0) ?? 0;
 
@@ -492,6 +517,19 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
           </ol>
         </section>
       )}
+      <ConfirmDialog
+        open={pendingRegen}
+        title={dict.create.regenTitle}
+        body={dict.create.regenBody}
+        confirmLabel={dict.create.regenConfirm}
+        cancelLabel={dict.common.close}
+        destructive
+        onConfirm={() => {
+          setPendingRegen(false);
+          void runImages();
+        }}
+        onCancel={() => setPendingRegen(false)}
+      />
     </div>
   );
 }

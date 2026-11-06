@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { summarize } from '@escenai/core';
 import { SiteHeader } from '@/components/SiteHeader';
 import { createContainer } from '@/lib/container';
 import { getDictionary } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n';
 import { getLocale } from '@/lib/locale-server';
 
 export const dynamic = 'force-dynamic';
@@ -11,11 +13,57 @@ function formatDate(iso: string): string {
   return iso.slice(0, 16).replace('T', ' ');
 }
 
+/** Esqueleto con la misma rejilla que la lista real: evita el salto al cargar. */
+function ProjectsSkeleton() {
+  return (
+    <ul className="mt-8 grid gap-3 sm:grid-cols-2" aria-hidden>
+      {[0, 1, 2, 3].map((index) => (
+        <li
+          key={index}
+          className="h-[118px] animate-pulse rounded-xl border border-[var(--line)] bg-[var(--panel)]"
+        />
+      ))}
+    </ul>
+  );
+}
+
+async function ProjectsList({ dict }: { readonly dict: Dictionary }) {
+  const container = createContainer();
+  const projects = (await container.projects.list()).map(summarize);
+
+  if (projects.length === 0) {
+    return (
+      <div className="mt-10 rounded-xl border border-dashed border-[var(--line)] p-10 text-center">
+        <p className="text-sm text-[var(--muted)]">{dict.projects.empty}</p>
+      </div>
+    );
+  }
+
+  return (
+    <ul className="mt-8 grid gap-3 sm:grid-cols-2">
+      {projects.map((project) => (
+        <li key={project.id}>
+          <Link
+            href={`/projects/${project.id}`}
+            className="block rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5 transition hover:border-[var(--accent)]"
+          >
+            <p className="text-base font-semibold">{project.titulo}</p>
+            <p className="mt-1 text-xs text-[var(--muted)]">
+              {project.nombre} · {formatDate(project.updatedAt)}
+            </p>
+            <p className="mt-3 font-mono text-[11px] text-[var(--muted)]">
+              {project.versions} {dict.projects.versions} · {project.duracionObjetivoS} s
+            </p>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default async function ProjectsPage() {
   const locale = await getLocale();
   const dict = getDictionary(locale);
-  const container = createContainer();
-  const projects = (await container.projects.list()).map(summarize);
 
   return (
     <main className="min-h-screen">
@@ -31,30 +79,9 @@ export default async function ProjectsPage() {
           </Link>
         </div>
 
-        {projects.length === 0 ? (
-          <div className="mt-10 rounded-xl border border-dashed border-[var(--line)] p-10 text-center">
-            <p className="text-sm text-[var(--muted)]">{dict.projects.empty}</p>
-          </div>
-        ) : (
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-            {projects.map((project) => (
-              <li key={project.id}>
-                <Link
-                  href={`/projects/${project.id}`}
-                  className="block rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5 transition hover:border-[var(--accent)]"
-                >
-                  <p className="text-base font-semibold">{project.titulo}</p>
-                  <p className="mt-1 text-xs text-[var(--muted)]">
-                    {project.nombre} · {formatDate(project.updatedAt)}
-                  </p>
-                  <p className="mt-3 font-mono text-[11px] text-[var(--muted)]">
-                    {project.versions} {dict.projects.versions} · {project.duracionObjetivoS} s
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Suspense fallback={<ProjectsSkeleton />}>
+          <ProjectsList dict={dict} />
+        </Suspense>
       </div>
     </main>
   );

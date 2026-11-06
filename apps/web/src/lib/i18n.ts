@@ -64,6 +64,9 @@ export interface Dictionary {
     readonly rendering: string;
     readonly renderNeedsAssets: string;
     readonly slowHint: string;
+    readonly regenTitle: string;
+    readonly regenBody: string;
+    readonly regenConfirm: string;
     readonly compact: string;
     readonly compacting: string;
   };
@@ -81,6 +84,11 @@ export interface Dictionary {
     readonly activePlan: string;
     readonly saved: string;
     readonly openProject: string;
+    readonly remove: string;
+    readonly removeTitle: string;
+    readonly removeBody: string;
+    readonly removeConfirm: string;
+    readonly removing: string;
   };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
@@ -151,6 +159,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       renderNeedsAssets: 'Genera primero las imágenes y la voz',
       slowHint:
         'Esto llama a los proveedores de verdad: imágenes 3-5 min, voz ~20 s, render 3-5 min. El contador no se detiene hasta que termine.',
+      regenTitle: '¿Regenerar las imágenes?',
+      regenBody: 'Vuelve a llamar al proveedor para las siete escenas y consume cuota otra vez. La voz y el video actuales se descartan.',
+      regenConfirm: 'Regenerar',
       compact: 'Recortar guion',
       compacting: 'Recortando…',
     },
@@ -168,6 +179,11 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       activePlan: 'Plan de la versión activa',
       saved: 'Guardado como proyecto',
       openProject: 'Abrir proyecto',
+      remove: 'Eliminar proyecto',
+      removeTitle: '¿Eliminar este proyecto?',
+      removeBody: 'Se borran todas sus versiones del plan. Las imágenes y audios ya generados quedan en disco.',
+      removeConfirm: 'Eliminar',
+      removing: 'Eliminando…',
     },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
@@ -236,6 +252,9 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       renderNeedsAssets: 'Generate images and voice first',
       slowHint:
         'This calls the real providers: images 3-5 min, voice ~20 s, render 3-5 min. The counter keeps running until it finishes.',
+      regenTitle: 'Regenerate the images?',
+      regenBody: 'Calls the provider again for all seven scenes and burns quota again. The current voice and video are discarded.',
+      regenConfirm: 'Regenerate',
       compact: 'Trim script',
       compacting: 'Trimming…',
     },
@@ -253,6 +272,11 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       activePlan: 'Active version plan',
       saved: 'Saved as project',
       openProject: 'Open project',
+      remove: 'Delete project',
+      removeTitle: 'Delete this project?',
+      removeBody: 'All plan versions are deleted. Images and audio already generated stay on disk.',
+      removeConfirm: 'Delete',
+      removing: 'Deleting…',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

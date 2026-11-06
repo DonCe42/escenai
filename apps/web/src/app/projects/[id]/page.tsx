@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { DeleteProjectButton } from '@/components/DeleteProjectButton';
 import { ProjectVersions } from '@/components/ProjectVersions';
 import { SiteHeader } from '@/components/SiteHeader';
 import { createContainer } from '@/lib/container';
@@ -27,9 +28,12 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
         </Link>
 
         <h1 className="mt-4 text-3xl font-semibold tracking-tight">{project.nombre}</h1>
-        <p className="mt-2 font-mono text-xs text-[var(--muted)]">
-          {project.versions.length} {dict.projects.versions} · {active?.plan.titulo ?? ''}
-        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+          <p className="font-mono text-xs text-[var(--muted)]">
+            {project.versions.length} {dict.projects.versions} · {active?.plan.titulo ?? ''}
+          </p>
+          <DeleteProjectButton projectId={project.id} dict={dict} />
+        </div>
 
         <ProjectVersions
           projectId={project.id}
