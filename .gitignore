@@ -41,3 +41,6 @@ pnpm-debug.log*
 
 # artefactos de tsc
 *.tsbuildinfo
+
+# copias temporales que el render hace para Remotion
+apps/worker/public/renders/
