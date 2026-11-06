@@ -57,8 +57,8 @@ infra/            docker-compose para self-host
 | Fase | Contenido | Estado |
 |---|---|---|
 | F0 | Monorepo, núcleo, cifrado de keys, UI bilingüe, CI | completada |
-| F1 | Contrato `VideoPlan` + validador | completada (adelantada dentro de F0) |
-| F2 | Guion de punta a punta con modelo real | pendiente |
+| F1 | Contrato `VideoPlan` + validador | completada |
+| F2 | Guion de punta a punta con Gemini | completada (pendiente la prueba con key real) |
 | F3 | Imágenes (Nano Banana) y voz (MiniMax) | pendiente |
 | F4 | Render con Remotion en worker | pendiente |
 | F5 | Variantes 1:1 y 16:9, bilingüe, costos | pendiente |
