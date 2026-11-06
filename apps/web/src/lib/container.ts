@@ -5,6 +5,7 @@ import {
   GoogleKeyVerifier,
   GoogleTextModel,
   SystemClock,
+  MinimaxSpeech,
   VertexImageModel,
   VertexKeyVerifier,
   VertexTextModel,
@@ -15,6 +16,7 @@ import type {
   ImageModelPort,
   KeyVerifierPort,
   ProviderId,
+  SpeechPort,
   SecretStorePort,
   StoragePort,
   TextModelPort,
@@ -35,6 +37,7 @@ export interface Container {
   readonly keyFor: (workspaceId: string, provider: ProviderId) => Promise<string>;
   readonly verifier: KeyVerifierPort;
   readonly imageModel: (workspaceId: string) => ImageModelPort;
+  readonly speechModel: (workspaceId: string) => SpeechPort;
   readonly storage: StoragePort;
 }
 
@@ -69,6 +72,11 @@ export function createContainer(): Container {
         getCredentials: () => keyFor(workspaceId, 'google-vertex'),
         ...(process.env.GOOGLE_IMAGE_MODEL ? { model: process.env.GOOGLE_IMAGE_MODEL } : {}),
         ...(process.env.VERTEX_LOCATION ? { location: process.env.VERTEX_LOCATION } : {}),
+      }),
+    speechModel: (workspaceId: string) =>
+      new MinimaxSpeech({
+        getApiKey: () => keyFor(workspaceId, 'minimax'),
+        ...(process.env.MINIMAX_SPEECH_MODEL ? { model: process.env.MINIMAX_SPEECH_MODEL } : {}),
       }),
     storage: new FileStorage(join(process.cwd(), '.data', 'assets')),
     verifier: {

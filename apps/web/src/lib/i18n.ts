@@ -51,6 +51,10 @@ export interface Dictionary {
     readonly openSettings: string;
     readonly generateImages: string;
     readonly generatingImages: string;
+    readonly generateVoice: string;
+    readonly generatingVoice: string;
+    readonly voiceTotal: string;
+    readonly voiceOverBudget: string;
   };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
@@ -112,6 +116,10 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       openSettings: 'Configurar keys',
       generateImages: 'Generar imágenes',
       generatingImages: 'Generando imágenes…',
+      generateVoice: 'Generar voz',
+      generatingVoice: 'Generando voz…',
+      voiceTotal: 'Duración real de la voz',
+      voiceOverBudget: 'se pasa del objetivo: hay que recortar texto',
     },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
@@ -171,6 +179,10 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       openSettings: 'Set up keys',
       generateImages: 'Generate images',
       generatingImages: 'Generating images…',
+      generateVoice: 'Generate voice',
+      generatingVoice: 'Generating voice…',
+      voiceTotal: 'Real voice duration',
+      voiceOverBudget: 'over budget: trim the script',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

@@ -41,6 +41,10 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [images, setImages] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [voice, setVoice] = useState<Record<string, string>>({});
+  const [loadingVoice, setLoadingVoice] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [voiceTotal, setVoiceTotal] = useState<number | null>(null);
 
   function update<K extends keyof BriefState>(key: K, value: BriefState[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
@@ -53,6 +57,9 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     setPlan(null);
     setImages({});
     setImageError(null);
+    setVoice({});
+    setVoiceError(null);
+    setVoiceTotal(null);
 
     try {
       const response = await fetch('/api/script', {
@@ -104,6 +111,35 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       setImageError(dict.common.error);
     } finally {
       setLoadingImages(false);
+    }
+  }
+
+  async function generateVoice() {
+    if (plan === null) return;
+    setLoadingVoice(true);
+    setVoiceError(null);
+    try {
+      const response = await fetch('/api/voice', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        clips?: readonly { sceneId: string; url: string }[];
+        timeline?: { totalMs: number; objetivoMs: number; exceedsBudget: boolean };
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.clips === undefined) {
+        setVoiceError(payload.message ?? payload.code ?? dict.common.error);
+        return;
+      }
+      setVoice(Object.fromEntries(payload.clips.map((clip) => [clip.sceneId, clip.url])));
+      setVoiceTotal(payload.timeline?.totalMs ?? null);
+    } catch {
+      setVoiceError(dict.common.error);
+    } finally {
+      setLoadingVoice(false);
     }
   }
 
@@ -203,12 +239,35 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
               >
                 {loadingImages ? dict.create.generatingImages : dict.create.generateImages}
               </button>
+              <button
+                type="button"
+                onClick={generateVoice}
+                disabled={loadingVoice}
+                className="rounded-lg border border-[var(--line)] px-3 py-1.5 text-xs font-semibold text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {loadingVoice ? dict.create.generatingVoice : dict.create.generateVoice}
+              </button>
             </div>
           </div>
 
           {imageError !== null && (
             <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
               {imageError}
+            </p>
+          )}
+
+          {voiceError !== null && (
+            <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
+              {voiceError}
+            </p>
+          )}
+
+          {voiceTotal !== null && (
+            <p className="mt-4 font-mono text-xs text-[var(--muted)]">
+              {dict.create.voiceTotal}: {(voiceTotal / 1000).toFixed(1)} s
+              {voiceTotal > plan.duracionObjetivoS * 1000 * 1.15 && (
+                <span className="ml-2 text-amber-300">{dict.create.voiceOverBudget}</span>
+              )}
             </p>
           )}
 
@@ -249,6 +308,10 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
                     alt={scene.textoPantalla.join(' ')}
                     className="mt-3 w-full max-w-[220px] rounded-lg border border-[var(--line)]"
                   />
+                )}
+
+                {voice[scene.id] !== undefined && (
+                  <audio controls src={voice[scene.id]} className="mt-3 w-full max-w-[320px]" />
                 )}
 
                 <p className="mt-3 border-l-2 border-[var(--line)] pl-3 text-xs leading-relaxed text-[var(--muted)]">

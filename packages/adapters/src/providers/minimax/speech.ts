@@ -1,13 +1,125 @@
 import { ProviderNotConfiguredError } from '@escenai/core';
-import type { SpeechPort, SynthesizedSpeech } from '@escenai/core';
+import type { Locale, SpeechPort, SynthesizedSpeech, WordTiming } from '@escenai/core';
+
+const DEFAULT_BASE_URL = 'https://api.minimax.io';
+const DEFAULT_MODEL = 'speech-2.8-hd';
+const DEFAULT_VOICE_ES = 'female-shaonv';
+const DEFAULT_VOICE_EN = 'female-shaonv';
+
+export type MinimaxVoiceId = string;
+
+export interface MinimaxSpeechOptions {
+  readonly getApiKey: () => Promise<string>;
+  readonly model?: string;
+  readonly baseUrl?: string;
+  readonly fetchImpl?: typeof fetch;
+  readonly voiceEs?: MinimaxVoiceId;
+  readonly voiceEn?: MinimaxVoiceId;
+}
+
+interface Segment {
+  readonly timestamped_words?: readonly {
+    readonly word?: string;
+    readonly time_begin?: number;
+    readonly time_end?: number;
+  }[];
+}
+
+interface TtsResponse {
+  readonly data?: { readonly audio?: string; readonly subtitle_file?: string };
+  readonly extra_info?: { readonly audio_length?: number };
+  readonly base_resp?: { readonly status_code?: number; readonly status_msg?: string };
+}
+
+function flattenWords(segments: readonly Segment[]): readonly WordTiming[] {
+  const words: WordTiming[] = [];
+  for (const segment of segments) {
+    for (const word of segment.timestamped_words ?? []) {
+      if (word.word === undefined) continue;
+      words.push({
+        word: word.word,
+        startMs: word.time_begin ?? 0,
+        endMs: word.time_end ?? 0,
+      });
+    }
+  }
+  return words;
+}
 
 /**
- * speech-2.8-hd con subtitle_type: "word".
- * Los timestamps por palabra son obligatorios: sin ellos no hay karaoke ni subtítulos
- * sincronizados, y el producto pierde su rasgo visual. Fase 3.
+ * Voz de MiniMax con marcas de tiempo por palabra.
+ * Sin los timestamps el producto pierde el karaoke y los subtítulos sincronizados,
+ * así que se piden siempre y se descargan en el momento (la URL caduca a las 24 h).
  */
 export class MinimaxSpeech implements SpeechPort {
-  async synthesize(): Promise<SynthesizedSpeech> {
-    throw new ProviderNotConfiguredError('minimax');
+  constructor(private readonly options: MinimaxSpeechOptions) {}
+
+  async synthesize(input: {
+    readonly text: string;
+    readonly locale: Locale;
+    readonly voiceId?: string;
+  }): Promise<SynthesizedSpeech> {
+    const fetchImpl = this.options.fetchImpl ?? fetch;
+    const apiKey = await this.options.getApiKey().catch(() => {
+      throw new ProviderNotConfiguredError('minimax');
+    });
+    const baseUrl = this.options.baseUrl ?? DEFAULT_BASE_URL;
+
+    const voiceId =
+      input.voiceId ??
+      (input.locale === 'en'
+        ? (this.options.voiceEn ?? DEFAULT_VOICE_EN)
+        : (this.options.voiceEs ?? DEFAULT_VOICE_ES));
+
+    const response = await fetchImpl(`${baseUrl}/v1/t2a_v2`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        model: this.options.model ?? DEFAULT_MODEL,
+        text: input.text,
+        stream: false,
+        language_boost: input.locale === 'en' ? 'English' : 'Spanish',
+        output_format: 'hex',
+        subtitle_enable: true,
+        subtitle_type: 'word',
+        voice_setting: { voice_id: voiceId, speed: 1, vol: 1, pitch: 0 },
+        audio_setting: { sample_rate: 44100, bitrate: 128000, format: 'mp3', channel: 1 },
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => '');
+      throw new Error(`MiniMax respondió HTTP ${response.status}: ${body.slice(0, 200)}`);
+    }
+
+    const payload = (await response.json()) as TtsResponse;
+    const status = payload.base_resp?.status_code ?? 0;
+    if (status !== 0) {
+      throw new Error(`MiniMax ${status}: ${payload.base_resp?.status_msg ?? 'error desconocido'}`);
+    }
+    if (payload.data?.audio === undefined) {
+      throw new Error('MiniMax no devolvió audio.');
+    }
+
+    let words: readonly WordTiming[] = [];
+    const subtitleUrl = payload.data.subtitle_file;
+    if (subtitleUrl !== undefined) {
+      try {
+        const subtitleResponse = await fetchImpl(subtitleUrl);
+        if (subtitleResponse.ok) {
+          words = flattenWords((await subtitleResponse.json()) as readonly Segment[]);
+        }
+      } catch {
+        // Sin subtítulos el video sigue siendo posible; sin audio, no.
+        words = [];
+      }
+    }
+
+    return {
+      audio: Uint8Array.from(Buffer.from(payload.data.audio, 'hex')),
+      mimeType: 'audio/mpeg',
+      durationMs: payload.extra_info?.audio_length ?? 0,
+      words,
+    };
   }
 }
