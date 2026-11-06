@@ -110,7 +110,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
         ['Guion', 'El modelo propone escenas; un validador determinista las acepta o las rechaza.'],
         ['Video', 'Imágenes, voz con timestamps y composición con Remotion. 1080x1920.'],
       ],
-      footnote: 'Fase 0: esqueleto, núcleo y cifrado de keys. El pipeline de video llega en la fase 3-4.',
+      footnote: 'MVP abierto. Trae tu key y mira lo que sale: guion, imágenes, voz y video, todo en un sitio.',
     },
     settings: {
       title: 'Ajustes',
@@ -205,7 +205,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
         ['Script', 'The model proposes scenes; a deterministic validator accepts or rejects them.'],
         ['Video', 'Images, voice with timestamps and Remotion composition. 1080x1920.'],
       ],
-      footnote: 'Phase 0: skeleton, core and key encryption. The video pipeline lands in phases 3-4.',
+      footnote: 'Open MVP. Bring your key and see what comes out: script, images, voice and video, all in one place.',
     },
     settings: {
       title: 'Settings',

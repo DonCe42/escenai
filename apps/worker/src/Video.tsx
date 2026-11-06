@@ -3,6 +3,7 @@ import {
   Audio,
   Easing,
   Img,
+  OffthreadVideo,
   interpolate,
   Sequence,
   staticFile,
@@ -187,11 +188,19 @@ export function EscenaiVideo({
         return (
           <Sequence key={scene.id} from={start} durationInFrames={durationInFrames}>
             <AbsoluteFill style={{ backgroundColor: colorFondo }}>
-              <KenBurns scene={scene} durationInFrames={durationInFrames} />
+              {scene.videoSrc === undefined ? (
+                <KenBurns scene={scene} durationInFrames={durationInFrames} />
+              ) : (
+                <OffthreadVideo
+                  src={resolveSrc(scene.videoSrc)}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  muted
+                />
+              )}
               <AbsoluteFill
                 style={{
                   background:
-                    'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0.72) 100%)',
+                    'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.20) 55%, rgba(0,0,0,0.84) 100%)',
                 }}
               />
               <ScreenText

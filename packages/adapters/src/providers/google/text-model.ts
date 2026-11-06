@@ -53,6 +53,11 @@ function readText(payload: GoogleResponse): string {
   const text = candidate?.content?.parts?.map((part) => part.text ?? '').join('') ?? '';
   if (text.trim().length === 0) {
     const reason = payload.promptFeedback?.blockReason ?? candidate?.finishReason ?? 'sin texto';
+    if (reason === 'MAX_TOKENS') {
+      throw new Error(
+        'El modelo gastó todo el presupuesto de salida antes de escribir el guion. Súbelo o baja el nivel de razonamiento.',
+      );
+    }
     throw new Error(`El modelo no devolvió texto (${reason}).`);
   }
   return text;
@@ -106,7 +111,24 @@ export class GoogleTextModel implements TextModelPort {
       throw new ProviderHttpError('google', response.status, body);
     }
 
-    const payload = (await response.json()) as GoogleResponse;
+    // Si el proveedor (o un proxy delante) devuelve HTML, el error de JSON.parse
+    // no dice nada útil: se comprueba el tipo antes de parsear.
+    const contentType = response.headers.get('content-type') ?? '';
+    const bodyText = await response.text();
+    if (!contentType.includes('json') && bodyText.trimStart().startsWith('<')) {
+      throw new Error(
+        `El proveedor devolvió HTML en vez de JSON (HTTP ${response.status}). Suele ser un proxy o una página de error intermedia: ${bodyText.trim().slice(0, 160)}`,
+      );
+    }
+
+    let payload: GoogleResponse;
+    try {
+      payload = JSON.parse(bodyText) as GoogleResponse;
+    } catch {
+      throw new Error(
+        `La respuesta del proveedor no es JSON válido (HTTP ${response.status}): ${bodyText.trim().slice(0, 160)}`,
+      );
+    }
     return extractJsonObject(readText(payload));
   }
 }

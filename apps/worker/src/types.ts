@@ -8,6 +8,8 @@ export interface SceneProps {
   readonly id: string;
   readonly textoPantalla: readonly string[];
   readonly imageSrc: string;
+  /** Si viene, la escena muestra este clip en lugar de la imagen. */
+  readonly videoSrc?: string;
   readonly audioSrc: string;
   readonly durationMs: number;
   readonly words: readonly WordTiming[];

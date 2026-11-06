@@ -6,6 +6,7 @@ function fakeFetch(status: number, body: unknown): typeof fetch {
   return (async () => ({
     ok: status >= 200 && status < 300,
     status,
+    headers: { get: () => 'application/json' },
     json: async () => body,
     text: async () => JSON.stringify(body),
   })) as unknown as typeof fetch;
@@ -41,7 +42,14 @@ describe('GoogleTextModel', () => {
     const fetchImpl = (async (url: string, init: RequestInit) => {
       capturedUrl = url;
       capturedInit = init;
-      return { ok: true, status: 200, json: async () => okBody('{"escenas":[]}'), text: async () => '' };
+      const body = okBody('{"escenas":[]}');
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => 'application/json' },
+        json: async () => body,
+        text: async () => JSON.stringify(body),
+      };
     }) as unknown as typeof fetch;
 
     const model = new GoogleTextModel({ ...base, fetchImpl });
@@ -60,6 +68,21 @@ describe('GoogleTextModel', () => {
   it('convierte una respuesta con cercas en un objeto', async () => {
     const model = new GoogleTextModel({ ...base, fetchImpl: fakeFetch(200, okBody('```json\n{"ok":true}\n```')) });
     await expect(model.generateJson({ systemPrompt: '', userPrompt: '', schemaName: 'x' })).resolves.toEqual({ ok: true });
+  });
+
+  it('explica cuando el proveedor devuelve HTML en vez de JSON', async () => {
+    const fetchImpl = (async () => ({
+      ok: true,
+      status: 200,
+      headers: { get: () => 'text/html' },
+      json: async () => ({}),
+      text: async () => '<!DOCTYPE html><html>error del proxy</html>',
+    })) as unknown as typeof fetch;
+
+    const model = new GoogleTextModel({ ...base, fetchImpl });
+    await expect(
+      model.generateJson({ systemPrompt: '', userPrompt: '', schemaName: 'x' }),
+    ).rejects.toThrow(/HTML en vez de JSON/);
   });
 
   it('propaga el status HTTP del proveedor', async () => {
