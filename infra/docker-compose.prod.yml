@@ -1,0 +1,32 @@
+# Despliegue de Escenai en un servidor propio.
+#   docker compose -f infra/docker-compose.prod.yml up -d --build
+#
+# Un solo contenedor: la web y el render comparten proceso y volumen.
+# El volumen guarda keys cifradas, proyectos, imágenes, audios y videos.
+
+services:
+  escenai:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: escenai
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../apps/web/.env.local
+    environment:
+      NODE_ENV: production
+      REMOTION_BROWSER: /usr/bin/chromium
+      REMOTION_CONCURRENCY: "1"
+    volumes:
+      - escenai-data:/app/apps/web/.data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  escenai-data:

@@ -54,6 +54,18 @@ Notas de uso:
 - **Video generativo**: los modelos H3 se cobran por **Pay-as-you-go**, no por el plan de tokens; sin saldo de video responden 402. Alternativa con el plan actual: `MiniMax-Hailuo-02` (6 s, 16:9 salvo que se le pase el primer fotograma). El modelo se cambia con `MINIMAX_VIDEO_MODEL`.
 - **Vertex**: los modelos nuevos solo responden en la ubicación `global`; en `us-central1` devuelven 404. Por eso `VERTEX_LOCATION` está en `.env`.
 
+## Desplegar
+
+El render necesita Chromium y ~4 minutos de CPU, y los datos viven en disco: no cabe en serverless. La v1 va en **un contenedor con volumen persistente**.
+
+```bash
+cp .env.example apps/web/.env.local   # MASTER_KEY, DEMO_PASSWORD y modelos
+docker compose -f infra/docker-compose.prod.yml up -d --build
+curl -s localhost:3000/api/health
+```
+
+`DEMO_PASSWORD` es obligatoria si la URL es pública: sin login, cualquiera generaría imágenes con las keys guardadas en el servidor y consumiría cuota ajena. Con esa variable, toda la app pide usuario y contraseña (Basic Auth).
+
 ## Verificar que todo está sano
 
 ```bash
