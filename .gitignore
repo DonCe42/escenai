@@ -44,3 +44,9 @@ pnpm-debug.log*
 
 # copias temporales que el render hace para Remotion
 apps/worker/public/renders/
+
+# documentacion interna del proyecto: se queda en disco, no se publica
+00_Producto/
+01_Arquitectura/
+02_Plan/
+03_Referencias/

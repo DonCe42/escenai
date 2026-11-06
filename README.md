@@ -66,7 +66,6 @@ packages/
   core/           dominio, puertos, casos de uso, prompts y validadores
   adapters/       cifrado, almacenamiento, Google Vertex, Google AI Studio, MiniMax
 infra/            docker-compose para self-host
-*.md              documentación de producto, arquitectura y plan
 ```
 
 `packages/core` no importa nada de `next`, `react`, SDKs de proveedor ni módulos de Node. No es una convención: lo impone ESLint y hay que respetarlo.
@@ -83,25 +82,12 @@ infra/            docker-compose para self-host
 | F5 | Variantes 1:1 y 16:9, bilingüe, música, costos | pendiente |
 | F6 | Publicación: demo, video y post en X | pendiente |
 
-## Documentación
-
-| Doc | Qué contiene |
-|---|---|
-| `00_Producto/01_vision_y_alcance.md` | Qué es, qué NO es, alcance cerrado de la v1 |
-| `00_Producto/02_flujo_de_usuario.md` | Un ejemplo concreto de principio a fin (Café Aurora) |
-| `01_Arquitectura/01_arquitectura_hexagonal.md` | Capas, regla de dependencia, puertos y adaptadores |
-| `01_Arquitectura/02_contrato_videoplan.md` | El contrato JSON que produce el LLM y consume el render |
-| `01_Arquitectura/03_proveedores_y_despliegue.md` | Endpoints verificados, jobs y despliegue |
-| `02_Plan/01_fases.md` | Fases con criterio de salida objetivo |
-| `02_Plan/02_decisiones.md` | Registro de decisiones con fecha y estado |
-| `03_Referencias/01_formatos_de_video.md` | Análisis técnico de los videos de referencia |
-
 ## Cómo retomar en una sesión futura
 
-1. Lee `02_Plan/02_decisiones.md`: ahí está qué se decidió y qué sigue abierto.
-2. Mira la tabla de fases de arriba para saber dónde quedó.
-3. Antes de tocar código, revisa la sección "regla de dependencia" de `01_Arquitectura/01_arquitectura_hexagonal.md`.
-4. Corre `pnpm check` antes de cualquier cambio: si está en verde, el punto de partida es sano.
+1. Mira la tabla de fases para saber dónde quedó el proyecto.
+2. Corre `pnpm check`: si está en verde, el punto de partida es sano.
+3. La regla que no se negocia está resumida abajo, en los principios.
+4. El contrato de datos es `packages/core/src/domain/video-plan.ts` y su validador vive al lado: son la fuente de verdad, no un documento.
 
 ## Principios del proyecto
 
