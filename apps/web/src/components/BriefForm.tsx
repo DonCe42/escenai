@@ -38,6 +38,9 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<VideoPlan | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
+  const [images, setImages] = useState<Record<string, string>>({});
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   function update<K extends keyof BriefState>(key: K, value: BriefState[K]) {
     setBrief((current) => ({ ...current, [key]: value }));
@@ -48,6 +51,8 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     setLoading(true);
     setError(null);
     setPlan(null);
+    setImages({});
+    setImageError(null);
 
     try {
       const response = await fetch('/api/script', {
@@ -72,6 +77,33 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       setError({ code: 'NETWORK' });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function generateImages() {
+    if (plan === null) return;
+    setLoadingImages(true);
+    setImageError(null);
+    try {
+      const response = await fetch('/api/images', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        assets?: readonly { sceneId: string; url: string }[];
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.assets === undefined) {
+        setImageError(payload.message ?? payload.code ?? dict.common.error);
+        return;
+      }
+      setImages(Object.fromEntries(payload.assets.map((asset) => [asset.sceneId, asset.url])));
+    } catch {
+      setImageError(dict.common.error);
+    } finally {
+      setLoadingImages(false);
     }
   }
 
@@ -158,11 +190,27 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         <section className="mt-10">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             <h2 className="text-lg font-semibold">{plan.titulo}</h2>
-            <p className="font-mono text-xs text-[var(--muted)]">
-              {dict.create.total}: {total.toFixed(1)} s / {plan.duracionObjetivoS} s ·{' '}
-              {plan.escenas.length} {dict.create.scenes}
-            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <p className="font-mono text-xs text-[var(--muted)]">
+                {dict.create.total}: {total.toFixed(1)} s / {plan.duracionObjetivoS} s ·{' '}
+                {plan.escenas.length} {dict.create.scenes}
+              </p>
+              <button
+                type="button"
+                onClick={generateImages}
+                disabled={loadingImages}
+                className="rounded-lg border border-[var(--accent)] px-3 py-1.5 text-xs font-semibold text-[var(--accent)] transition hover:bg-[var(--accent)] hover:text-[#04120a] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {loadingImages ? dict.create.generatingImages : dict.create.generateImages}
+              </button>
+            </div>
           </div>
+
+          {imageError !== null && (
+            <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
+              {imageError}
+            </p>
+          )}
 
           <ol className="mt-5 space-y-3">
             {plan.escenas.map((scene, index) => (
@@ -194,6 +242,14 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
                     </span>
                   ))}
                 </div>
+
+                {images[scene.id] !== undefined && (
+                  <img
+                    src={images[scene.id]}
+                    alt={scene.textoPantalla.join(' ')}
+                    className="mt-3 w-full max-w-[220px] rounded-lg border border-[var(--line)]"
+                  />
+                )}
 
                 <p className="mt-3 border-l-2 border-[var(--line)] pl-3 text-xs leading-relaxed text-[var(--muted)]">
                   {scene.promptImagen}

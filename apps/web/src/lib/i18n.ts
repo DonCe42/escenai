@@ -49,6 +49,8 @@ export interface Dictionary {
     readonly total: string;
     readonly keyRequired: string;
     readonly openSettings: string;
+    readonly generateImages: string;
+    readonly generatingImages: string;
   };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
@@ -108,6 +110,8 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       total: 'Total',
       keyRequired: 'Falta tu API key de Google para generar el guion.',
       openSettings: 'Configurar keys',
+      generateImages: 'Generar imágenes',
+      generatingImages: 'Generando imágenes…',
     },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
@@ -165,6 +169,8 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       total: 'Total',
       keyRequired: 'Your Google API key is missing to generate the script.',
       openSettings: 'Set up keys',
+      generateImages: 'Generate images',
+      generatingImages: 'Generating images…',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

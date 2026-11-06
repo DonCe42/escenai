@@ -6,5 +6,7 @@ export * from './providers/google/key-verifier';
 export * from './providers/google/vertex-credentials';
 export * from './providers/google/vertex-text-model';
 export * from './providers/google/vertex-key-verifier';
+export * from './providers/google/vertex-image-model';
+export * from './storage/file-storage';
 export * from './providers/minimax/speech';
 export * from './clock/system-clock';

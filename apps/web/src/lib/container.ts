@@ -5,11 +5,20 @@ import {
   GoogleKeyVerifier,
   GoogleTextModel,
   SystemClock,
+  VertexImageModel,
   VertexKeyVerifier,
   VertexTextModel,
+  FileStorage,
 } from '@escenai/adapters';
 import { ProviderNotConfiguredError } from '@escenai/core';
-import type { KeyVerifierPort, ProviderId, SecretStorePort, TextModelPort } from '@escenai/core';
+import type {
+  ImageModelPort,
+  KeyVerifierPort,
+  ProviderId,
+  SecretStorePort,
+  StoragePort,
+  TextModelPort,
+} from '@escenai/core';
 
 export type AppMode = 'demo' | 'supabase';
 
@@ -25,6 +34,8 @@ export interface Container {
   readonly detectTextProvider: (workspaceId: string) => Promise<TextProviderKind | null>;
   readonly keyFor: (workspaceId: string, provider: ProviderId) => Promise<string>;
   readonly verifier: KeyVerifierPort;
+  readonly imageModel: (workspaceId: string) => ImageModelPort;
+  readonly storage: StoragePort;
 }
 
 /**
@@ -53,6 +64,13 @@ export function createContainer(): Container {
     secrets,
     masterKeyMissing,
     keyFor,
+    imageModel: (workspaceId: string) =>
+      new VertexImageModel({
+        getCredentials: () => keyFor(workspaceId, 'google-vertex'),
+        ...(process.env.GOOGLE_IMAGE_MODEL ? { model: process.env.GOOGLE_IMAGE_MODEL } : {}),
+        ...(process.env.VERTEX_LOCATION ? { location: process.env.VERTEX_LOCATION } : {}),
+      }),
+    storage: new FileStorage(join(process.cwd(), '.data', 'assets')),
     verifier: {
       verify: (provider, apiKey) =>
         provider === 'google-vertex'
