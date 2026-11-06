@@ -10,6 +10,9 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
         <span className="text-sm font-semibold tracking-[0.2em] uppercase">Escenai</span>
       </Link>
       <nav className="flex items-center gap-5 text-sm text-[var(--muted)]">
+        <Link href="/new" className="transition hover:text-[var(--text)]">
+          {dict.nav.create}
+        </Link>
         <Link href="/settings" className="transition hover:text-[var(--text)]">
           {dict.nav.settings}
         </Link>

@@ -16,3 +16,4 @@ export * from './application/use-cases/generate-script';
 
 // Prompts (versionados con el contrato)
 export * from './application/prompts/script-prompt';
+export * from './application/prompts/default-style-token';

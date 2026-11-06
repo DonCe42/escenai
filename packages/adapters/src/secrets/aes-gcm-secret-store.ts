@@ -1,3 +1,4 @@
+import { ProviderNotConfiguredError } from '@escenai/core';
 import type {
   ProviderId,
   SecretRepositoryPort,
@@ -19,9 +20,9 @@ export class InvalidApiKeyError extends Error {
   }
 }
 
-export class MissingSecretError extends Error {
+export class MissingSecretError extends ProviderNotConfiguredError {
   constructor(provider: ProviderId) {
-    super(`No hay API key guardada para el proveedor "${provider}".`);
+    super(provider);
     this.name = 'MissingSecretError';
   }
 }

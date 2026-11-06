@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateScript } from '../src/application/use-cases/generate-script';
 import type { TextModelPort } from '../src/application/ports/text-model.port';
+import { ProviderNotConfiguredError } from '../src/domain/errors';
 import type { Brief, Project } from '../src/domain/project';
 
 const brand: Project = {
@@ -94,6 +95,20 @@ describe('generateScript', () => {
       }
     }
     expect(model.calls).toBe(3);
+  });
+
+  it('no reintenta ni disfraza la falta de credenciales', async () => {
+    let calls = 0;
+    const model: TextModelPort = {
+      async generateJson() {
+        calls += 1;
+        throw new ProviderNotConfiguredError('google');
+      },
+    };
+    await expect(generateScript({ text: model }, { brand, brief, locale: 'es' })).rejects.toBeInstanceOf(
+      ProviderNotConfiguredError,
+    );
+    expect(calls).toBe(1);
   });
 
   it('convierte un fallo del proveedor en model_error sin reintentar', async () => {

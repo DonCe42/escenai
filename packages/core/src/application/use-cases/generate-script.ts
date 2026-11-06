@@ -1,3 +1,4 @@
+import { ProviderNotConfiguredError } from '../../domain/errors';
 import { validateVideoPlan } from '../../domain/plan-validator';
 import type { PlanIssue } from '../../domain/plan-validator';
 import type { Brief, Project } from '../../domain/project';
@@ -69,6 +70,8 @@ export async function generateScript(
         schemaName: prompt.schemaName,
       });
     } catch (error) {
+      // Configuración ausente: no es un fallo del modelo ni se arregla reintentando.
+      if (error instanceof ProviderNotConfiguredError) throw error;
       return err({ kind: 'model_error', attempts: attempt, message: errorMessage(error) });
     }
 

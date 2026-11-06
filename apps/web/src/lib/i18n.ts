@@ -4,7 +4,7 @@ export type { Locale };
 export { LOCALE_COOKIE } from './locale';
 
 export interface Dictionary {
-  readonly nav: { readonly settings: string; readonly github: string };
+  readonly nav: { readonly create: string; readonly settings: string; readonly github: string };
   readonly home: {
     readonly kicker: string;
     readonly title: string;
@@ -30,12 +30,29 @@ export interface Dictionary {
     readonly missingMasterKey: string;
     readonly maskedNote: string;
   };
+  readonly create: {
+    readonly title: string;
+    readonly subtitle: string;
+    readonly fields: {
+      readonly que: string;
+      readonly aQuien: string;
+      readonly queDebeSentir: string;
+      readonly queDebeHacer: string;
+    };
+    readonly duration: string;
+    readonly submit: string;
+    readonly generating: string;
+    readonly scenes: string;
+    readonly total: string;
+    readonly keyRequired: string;
+    readonly openSettings: string;
+  };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
 
 export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } = {
   es: {
-    nav: { settings: 'Ajustes', github: 'GitHub' },
+    nav: { create: 'Crear', settings: 'Ajustes', github: 'GitHub' },
     home: {
       kicker: 'MVP en construcción',
       title: 'Tu brief entra. Tu campaña sale.',
@@ -68,10 +85,28 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
         'Falta MASTER_KEY en el entorno. Genera una con: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
       maskedNote: 'Solo mostramos los últimos 4 caracteres.',
     },
+    create: {
+      title: 'Nuevo video',
+      subtitle:
+        'Cuatro campos. El modelo propone el guion y el validador decide si sirve: escenas, texto en pantalla, narración y prompt de imagen.',
+      fields: {
+        que: 'Qué ofreces',
+        aQuien: 'A quién',
+        queDebeSentir: 'Qué debe sentir',
+        queDebeHacer: 'Qué debe hacer',
+      },
+      duration: 'Duración (s)',
+      submit: 'Generar guion',
+      generating: 'Generando…',
+      scenes: 'escenas',
+      total: 'Total',
+      keyRequired: 'Falta tu API key de Google para generar el guion.',
+      openSettings: 'Configurar keys',
+    },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
   en: {
-    nav: { settings: 'Settings', github: 'GitHub' },
+    nav: { create: 'Create', settings: 'Settings', github: 'GitHub' },
     home: {
       kicker: 'MVP in progress',
       title: 'Your brief goes in. Your campaign comes out.',
@@ -103,6 +138,24 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       missingMasterKey:
         'MASTER_KEY is missing. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
       maskedNote: 'Only the last 4 characters are shown.',
+    },
+    create: {
+      title: 'New video',
+      subtitle:
+        'Four fields. The model proposes the script and the validator decides whether it works: scenes, on-screen text, narration and image prompt.',
+      fields: {
+        que: 'What you offer',
+        aQuien: 'To whom',
+        queDebeSentir: 'How it should feel',
+        queDebeHacer: 'What they should do',
+      },
+      duration: 'Duration (s)',
+      submit: 'Generate script',
+      generating: 'Generating…',
+      scenes: 'scenes',
+      total: 'Total',
+      keyRequired: 'Your Google API key is missing to generate the script.',
+      openSettings: 'Set up keys',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

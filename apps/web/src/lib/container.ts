@@ -1,6 +1,12 @@
 import { join } from 'node:path';
-import { AesGcmSecretStore, FileSecretRepository, SystemClock } from '@escenai/adapters';
-import type { SecretStorePort } from '@escenai/core';
+import {
+  AesGcmSecretStore,
+  FileSecretRepository,
+  GoogleTextModel,
+  SystemClock,
+} from '@escenai/adapters';
+import { ProviderNotConfiguredError } from '@escenai/core';
+import type { ProviderId, SecretStorePort, TextModelPort } from '@escenai/core';
 
 export type AppMode = 'demo' | 'supabase';
 
@@ -8,6 +14,9 @@ export interface Container {
   readonly mode: AppMode;
   readonly secrets: SecretStorePort | null;
   readonly masterKeyMissing: boolean;
+  /** El modelo se construye por workspace porque la key se descifra en cada llamada. */
+  readonly textModel: (workspaceId: string) => TextModelPort;
+  readonly keyFor: (workspaceId: string, provider: ProviderId) => Promise<string>;
 }
 
 /**
@@ -26,5 +35,20 @@ export function createContainer(): Container {
         new SystemClock(),
       );
 
-  return { mode: 'demo', secrets, masterKeyMissing };
+  function keyFor(workspaceId: string, provider: ProviderId): Promise<string> {
+    if (secrets === null) return Promise.reject(new ProviderNotConfiguredError(provider));
+    return secrets.read(workspaceId, provider);
+  }
+
+  return {
+    mode: 'demo',
+    secrets,
+    masterKeyMissing,
+    keyFor,
+    textModel: (workspaceId: string) =>
+      new GoogleTextModel({
+        getApiKey: () => keyFor(workspaceId, 'google'),
+        ...(process.env.GOOGLE_TEXT_MODEL ? { model: process.env.GOOGLE_TEXT_MODEL } : {}),
+      }),
+  };
 }
