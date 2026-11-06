@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { MissingSecretError } from '@escenai/adapters';
-import { ProviderNotConfiguredError } from '@escenai/core';
+import { ProviderNotConfiguredError, estimateClipCost } from '@escenai/core';
 import type { Aspect } from '@escenai/core';
 import { createContainer } from '@/lib/container';
 import { getWorkspace } from '@/lib/workspace';
@@ -71,6 +71,7 @@ export async function POST(request: Request): Promise<Response> {
         return NextResponse.json({
           providerJobId,
           url: await container.storage.signedUrl(ref, 3600),
+          estimatedCostUsd: estimateClipCost('MiniMax-H3-Lite', '768P', durationS),
         });
       }
       if (job.state === 'failed') {

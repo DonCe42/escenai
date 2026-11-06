@@ -113,6 +113,13 @@ export class MinimaxVideoClip implements VideoClipPort {
 
     if (!response.ok) {
       const body = await response.text().catch(() => '');
+      if (response.status === 402) {
+        throw new Error(
+          'MiniMax H3 no entra en tu Token Plan: se cobra por Pay-as-you-go. ' +
+            'Recarga saldo en Video (platform.minimax.io/user-center/payment/balance) y reintenta. ' +
+            `Detalle: ${body.slice(0, 160)}`,
+        );
+      }
       throw new Error(`MiniMax video respondió HTTP ${response.status}: ${body.slice(0, 200)}`);
     }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimateCost } from '../src/domain/cost-estimator';
+import { estimateClipCost, estimateCost } from '../src/domain/cost-estimator';
 import type { VideoPlan } from '../src/domain/video-plan';
 
 const plan: VideoPlan = {
@@ -24,6 +24,14 @@ describe('estimateCost', () => {
     expect(cost.video).toBe(0);
     expect(cost.music).toBe(0);
     expect(cost.total).toBe(0.2315);
+  });
+
+  it('estima el costo de un clip con la tabla oficial de MiniMax', () => {
+    expect(estimateClipCost('MiniMax-H3-Lite', '768P', 5)).toBe(0.2);
+    expect(estimateClipCost('MiniMax-H3', '2K', 5)).toBe(0.65);
+    expect(estimateClipCost('MiniMax-H3-Highspeed', '480P', 6)).toBe(0.24);
+    // resolución desconocida: cae a la primera de la tabla, nunca devuelve NaN
+    expect(estimateClipCost('MiniMax-H3-Lite', '4K', 5)).toBe(0.2);
   });
 
   it('el clip generativo domina el costo', () => {

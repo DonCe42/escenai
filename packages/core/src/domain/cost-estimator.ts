@@ -8,6 +8,24 @@ export interface PriceTable {
   readonly musicPerTrack: number;
 }
 
+/**
+ * Precio por segundo de video en MiniMax (consultado el 2026-11-06).
+ * H3 se cobra por Pay-as-you-go, no por el plan de tokens.
+ */
+export const VIDEO_PRICE_PER_SECOND = {
+  'MiniMax-H3': { '2K': 0.13, '768P': 0.08 },
+  'MiniMax-H3-Highspeed': { '768P': 0.06, '480P': 0.04 },
+  'MiniMax-H3-Lite': { '768P': 0.04, '480P': 0.025 },
+} as const;
+
+export type VideoModelId = keyof typeof VIDEO_PRICE_PER_SECOND;
+
+export function estimateClipCost(model: VideoModelId, resolution: string, seconds: number): number {
+  const table = VIDEO_PRICE_PER_SECOND[model] as Record<string, number | undefined>;
+  const perSecond = table[resolution] ?? Object.values(table)[0] ?? 0;
+  return Math.round(perSecond * seconds * 10000) / 10000;
+}
+
 export interface CostOptions {
   readonly clips?: { readonly count: number; readonly seconds: number };
   readonly music?: boolean;

@@ -40,10 +40,18 @@ Las keys se pegan en `/settings`. Se guardan cifradas con AES-256-GCM y se verif
 | Google AI Studio | API key `AIza…` | guion por la API pública |
 | MiniMax | API key | voz (`speech-2.8-hd`), imágenes (`image-01`), video (`MiniMax-Hailuo-02`) |
 
+Precios de video (por segundo, consultados el 2026-11-06):
+
+    MiniMax-H3            2K 0.13   ·  768P 0.08
+    MiniMax-H3-Highspeed          ·  768P 0.06  ·  480P 0.04
+    MiniMax-H3-Lite               ·  768P 0.04  ·  480P 0.025
+
+Un clip de 5 s con H3-Lite en 768P cuesta $0.20; con H3 en 2K, $0.65.
+
 Notas de uso:
 
 - **Imágenes**: Nano Banana respeta el estilo plano y la paleta; `image-01` de MiniMax deriva a cómic/fotorrealismo e inventa marcas reales. Vertex es el motor por defecto.
-- **Video generativo**: `MiniMax-H3` exige un plan superior (error 402). Los modelos v1 dan 6 s y solo 16:9 salvo que se les pase el primer fotograma.
+- **Video generativo**: los modelos H3 se cobran por **Pay-as-you-go**, no por el plan de tokens; sin saldo de video responden 402. Alternativa con el plan actual: `MiniMax-Hailuo-02` (6 s, 16:9 salvo que se le pase el primer fotograma). El modelo se cambia con `MINIMAX_VIDEO_MODEL`.
 - **Vertex**: los modelos nuevos solo responden en la ubicación `global`; en `us-central1` devuelven 404. Por eso `VERTEX_LOCATION` está en `.env`.
 
 ## Verificar que todo está sano
