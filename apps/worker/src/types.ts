@@ -14,10 +14,13 @@ export interface SceneProps {
   readonly motion: 'zoom-in-lento' | 'zoom-out-lento' | 'pan-derecha' | 'pan-izquierda' | 'estatico';
 }
 
+export type VideoFormat = '9:16' | '1:1' | '16:9';
+
 export interface VideoProps {
   /** Remotion exige que los props sean un Record; el índice lo satisface sin perder tipos. */
   readonly [key: string]: unknown;
   readonly titulo: string;
+  readonly formato: VideoFormat;
   readonly colorFondo: string;
   readonly colorTexto: string;
   readonly colorAcento: string;

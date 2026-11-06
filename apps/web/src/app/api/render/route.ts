@@ -36,7 +36,7 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ code: 'MASTER_KEY_MISSING' }, { status: 503 });
   }
 
-  let body: { plan?: unknown; imageBatch?: unknown; audioBatch?: unknown };
+  let body: { plan?: unknown; imageBatch?: unknown; audioBatch?: unknown; formato?: unknown };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -89,8 +89,14 @@ export async function POST(request: Request): Promise<Response> {
       });
     }
 
+    const formato =
+      body.formato === '1:1' || body.formato === '16:9' || body.formato === '9:16'
+        ? body.formato
+        : '9:16';
+
     const props = {
       titulo: plan.titulo,
+      formato,
       colorFondo: '#0b0d10',
       colorTexto: '#f5f7fa',
       colorAcento: '#6ee7a8',
@@ -117,7 +123,11 @@ export async function POST(request: Request): Promise<Response> {
       'video/mp4',
     );
 
-    return NextResponse.json({ renderId, url: await container.storage.signedUrl(ref, 3600) });
+    return NextResponse.json({
+      renderId,
+      formato,
+      url: await container.storage.signedUrl(ref, 3600),
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'UNKNOWN';
     return NextResponse.json({ code: 'RENDER_ERROR', message: message.slice(0, 400) }, { status: 502 });

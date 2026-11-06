@@ -9,9 +9,9 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from 'remotion';
+import { formatSpec } from './formats';
+import type { FormatSpec } from './formats';
 import type { SceneProps, VideoProps } from './types';
-
-const SAFE_BOTTOM = 320;
 // Chrome headless cae en serif si no se declara familia: se nota mucho.
 const FONT = "Inter, 'Helvetica Neue', Helvetica, Arial, 'Segoe UI', sans-serif";
 
@@ -48,7 +48,17 @@ function KenBurns({ scene, durationInFrames }: { scene: SceneProps; durationInFr
   );
 }
 
-function ScreenText({ lines, accent }: { lines: readonly string[]; accent: string }) {
+function ScreenText({
+  lines,
+  accent,
+  scale,
+  spec,
+}: {
+  lines: readonly string[];
+  accent: string;
+  scale: number;
+  spec: FormatSpec;
+}) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -57,8 +67,8 @@ function ScreenText({ lines, accent }: { lines: readonly string[]; accent: strin
       style={{
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 90px',
-        gap: 12,
+        padding: `0 ${spec.sidePadding}px`,
+        gap: 12 * scale,
       }}
     >
       {lines.map((line, index) => {
@@ -77,7 +87,7 @@ function ScreenText({ lines, accent }: { lines: readonly string[]; accent: strin
               transform: `translateY(${y}px)`,
               color: index === lines.length - 1 ? accent : '#ffffff',
               fontFamily: FONT,
-              fontSize: 96,
+              fontSize: Math.round(96 * scale),
               lineHeight: 1.02,
               fontWeight: 800,
               letterSpacing: '-0.02em',
@@ -97,9 +107,13 @@ function ScreenText({ lines, accent }: { lines: readonly string[]; accent: strin
 function Karaoke({
   scene,
   accent,
+  scale,
+  spec,
 }: {
   scene: SceneProps;
   accent: string;
+  scale: number;
+  spec: FormatSpec;
 }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -113,14 +127,14 @@ function Karaoke({
   const lines = [words.slice(0, perLine), words.slice(perLine)];
 
   return (
-    <AbsoluteFill style={{ justifyContent: 'flex-end', paddingBottom: SAFE_BOTTOM }}>
+    <AbsoluteFill style={{ justifyContent: 'flex-end', paddingBottom: spec.safeBottom }}>
       <div
         style={{
           margin: '0 auto',
-          maxWidth: 900,
+          maxWidth: Math.round(900 * scale),
           textAlign: 'center',
           fontFamily: FONT,
-          fontSize: 52,
+          fontSize: Math.round(52 * scale),
           fontWeight: 600,
           lineHeight: 1.25,
           textShadow: '0 4px 18px rgba(0,0,0,0.75)',
@@ -150,8 +164,17 @@ function Karaoke({
   );
 }
 
-export function EscenaiVideo({ scenes, colorFondo, colorTexto, colorAcento }: VideoProps) {
-  const { fps } = useVideoConfig();
+export function EscenaiVideo({
+  scenes,
+  colorFondo,
+  colorTexto,
+  colorAcento,
+  formato,
+}: VideoProps) {
+  const { fps, width, height } = useVideoConfig();
+  const spec = formatSpec(formato ?? '9:16');
+  // Escala por área: el mismo texto respira igual en 9:16, 1:1 y 16:9.
+  const scale = Math.sqrt((width * height) / (1080 * 1920));
   let from = 0;
 
   return (
@@ -171,8 +194,13 @@ export function EscenaiVideo({ scenes, colorFondo, colorTexto, colorAcento }: Vi
                     'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0.72) 100%)',
                 }}
               />
-              <ScreenText lines={scene.textoPantalla} accent={colorAcento} />
-              <Karaoke scene={scene} accent={colorAcento} />
+              <ScreenText
+                lines={scene.textoPantalla}
+                accent={colorAcento}
+                scale={scale}
+                spec={spec}
+              />
+              <Karaoke scene={scene} accent={colorAcento} scale={scale} spec={spec} />
               {scene.audioSrc !== '' && <Audio src={resolveSrc(scene.audioSrc)} />}
               <div
                 style={{

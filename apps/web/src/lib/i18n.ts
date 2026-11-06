@@ -67,6 +67,7 @@ export interface Dictionary {
     readonly regenTitle: string;
     readonly regenBody: string;
     readonly regenConfirm: string;
+    readonly format: string;
     readonly compact: string;
     readonly compacting: string;
   };
@@ -162,6 +163,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       regenTitle: '¿Regenerar las imágenes?',
       regenBody: 'Vuelve a llamar al proveedor para las siete escenas y consume cuota otra vez. La voz y el video actuales se descartan.',
       regenConfirm: 'Regenerar',
+      format: 'Formato del video',
       compact: 'Recortar guion',
       compacting: 'Recortando…',
     },
@@ -255,6 +257,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       regenTitle: 'Regenerate the images?',
       regenBody: 'Calls the provider again for all seven scenes and burns quota again. The current voice and video are discarded.',
       regenConfirm: 'Regenerate',
+      format: 'Video format',
       compact: 'Trim script',
       compacting: 'Trimming…',
     },

@@ -63,6 +63,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [imageBatch, setImageBatch] = useState<string | null>(null);
   const [audioBatch, setAudioBatch] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [formato, setFormato] = useState<'9:16' | '1:1' | '16:9'>('9:16');
   const [loadingRender, setLoadingRender] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [compacting, setCompacting] = useState(false);
@@ -248,7 +249,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       const response = await fetch('/api/render', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan, imageBatch, audioBatch }),
+        body: JSON.stringify({ plan, imageBatch, audioBatch, formato }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         url?: string;
@@ -382,6 +383,17 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
               >
                 {loadingImages ? `${dict.create.generatingImages} ${elapsedImages}s` : dict.create.generateImages}
               </button>
+              <select
+                value={formato}
+                onChange={(event) => setFormato(event.target.value as '9:16' | '1:1' | '16:9')}
+                disabled={busy}
+                aria-label={dict.create.format}
+                className="rounded-md border border-[var(--line)] bg-[var(--bg)] px-2 py-1.5 font-mono text-[11px] text-[var(--muted)]"
+              >
+                <option value="9:16">9:16</option>
+                <option value="1:1">1:1</option>
+                <option value="16:9">16:9</option>
+              </select>
               <button
                 type="button"
                 onClick={renderVideo}
