@@ -5,7 +5,9 @@ import {
   GoogleKeyVerifier,
   GoogleTextModel,
   SystemClock,
+  MinimaxImageModel,
   MinimaxSpeech,
+  MinimaxVideoClip,
   VertexImageModel,
   VertexKeyVerifier,
   VertexTextModel,
@@ -15,6 +17,7 @@ import { ProviderNotConfiguredError } from '@escenai/core';
 import type {
   ImageModelPort,
   KeyVerifierPort,
+  VideoClipPort,
   ProviderId,
   SpeechPort,
   SecretStorePort,
@@ -26,6 +29,7 @@ export type AppMode = 'demo' | 'supabase';
 
 /** Vertex exige cuenta de servicio; la API key directa es otra vía de acceso al mismo modelo. */
 export type TextProviderKind = 'vertex' | 'api-key';
+export type ImageProviderKind = 'vertex' | 'minimax';
 
 export interface Container {
   readonly mode: AppMode;
@@ -36,7 +40,9 @@ export interface Container {
   readonly detectTextProvider: (workspaceId: string) => Promise<TextProviderKind | null>;
   readonly keyFor: (workspaceId: string, provider: ProviderId) => Promise<string>;
   readonly verifier: KeyVerifierPort;
-  readonly imageModel: (workspaceId: string) => ImageModelPort;
+  readonly imageModel: (workspaceId: string, kind: ImageProviderKind) => ImageModelPort;
+  readonly videoClip: (workspaceId: string) => VideoClipPort;
+  readonly detectImageProvider: (workspaceId: string) => Promise<ImageProviderKind | null>;
   readonly speechModel: (workspaceId: string) => SpeechPort;
   readonly storage: StoragePort;
 }
@@ -67,11 +73,28 @@ export function createContainer(): Container {
     secrets,
     masterKeyMissing,
     keyFor,
-    imageModel: (workspaceId: string) =>
-      new VertexImageModel({
-        getCredentials: () => keyFor(workspaceId, 'google-vertex'),
-        ...(process.env.GOOGLE_IMAGE_MODEL ? { model: process.env.GOOGLE_IMAGE_MODEL } : {}),
-        ...(process.env.VERTEX_LOCATION ? { location: process.env.VERTEX_LOCATION } : {}),
+    detectImageProvider: async (workspaceId: string): Promise<ImageProviderKind | null> => {
+      if (secrets === null) return null;
+      const list = await secrets.list(workspaceId);
+      if (list.some((secret) => secret.provider === 'google-vertex')) return 'vertex';
+      if (list.some((secret) => secret.provider === 'minimax')) return 'minimax';
+      return null;
+    },
+    imageModel: (workspaceId: string, kind: ImageProviderKind) =>
+      kind === 'minimax'
+        ? new MinimaxImageModel({
+            getApiKey: () => keyFor(workspaceId, 'minimax'),
+            ...(process.env.MINIMAX_IMAGE_MODEL ? { model: process.env.MINIMAX_IMAGE_MODEL } : {}),
+          })
+        : new VertexImageModel({
+            getCredentials: () => keyFor(workspaceId, 'google-vertex'),
+            ...(process.env.GOOGLE_IMAGE_MODEL ? { model: process.env.GOOGLE_IMAGE_MODEL } : {}),
+            ...(process.env.VERTEX_LOCATION ? { location: process.env.VERTEX_LOCATION } : {}),
+          }),
+    videoClip: (workspaceId: string) =>
+      new MinimaxVideoClip({
+        getApiKey: () => keyFor(workspaceId, 'minimax'),
+        ...(process.env.MINIMAX_VIDEO_MODEL ? { model: process.env.MINIMAX_VIDEO_MODEL } : {}),
       }),
     speechModel: (workspaceId: string) =>
       new MinimaxSpeech({

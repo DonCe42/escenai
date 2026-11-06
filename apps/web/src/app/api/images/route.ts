@@ -12,6 +12,12 @@ export const maxDuration = 300;
 // Vertex limita imágenes por minuto. En paralelo se desborda la cuota; secuencial
 // con una pausa corta es más lento pero termina siempre.
 const CONCURRENCY = 1;
+
+function extensionFor(mimeType: string): string {
+  if (mimeType === 'image/jpeg') return 'jpg';
+  if (mimeType === 'image/webp') return 'webp';
+  return 'png';
+}
 const PAUSE_BETWEEN_MS = 15000;
 
 async function inBatches<T, R>(
@@ -36,9 +42,9 @@ export async function POST(request: Request): Promise<Response> {
     return NextResponse.json({ code: 'MASTER_KEY_MISSING' }, { status: 503 });
   }
 
-  let body: { plan?: unknown };
+  let body: { plan?: unknown; provider?: unknown };
   try {
-    body = (await request.json()) as { plan?: unknown };
+    body = (await request.json()) as { plan?: unknown; provider?: unknown };
   } catch {
     return NextResponse.json({ code: 'INVALID_JSON' }, { status: 400 });
   }
@@ -50,12 +56,14 @@ export async function POST(request: Request): Promise<Response> {
   const plan = body.plan as VideoPlan;
 
   const workspace = await getWorkspace();
-  const kind = await container.detectTextProvider(workspace.id);
-  if (kind === null) {
+  const detected = await container.detectImageProvider(workspace.id);
+  if (detected === null) {
     return NextResponse.json({ code: 'KEY_REQUIRED', provider: 'google-vertex' }, { status: 412 });
   }
+  const kind =
+    body.provider === 'vertex' || body.provider === 'minimax' ? body.provider : detected;
 
-  const imageModel = container.imageModel(workspace.id);
+  const imageModel = container.imageModel(workspace.id, kind);
   const storage = container.storage;
   const batchId = Date.now().toString(36);
 
@@ -89,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
         referenceImage: anchor.bytes,
       });
       const ref = await storage.put(
-        `images/${workspace.id}/${batchId}/${scene.id}.png`,
+        `images/${workspace.id}/${batchId}/${scene.id}.${extensionFor(image.mimeType)}`,
         image.bytes,
         image.mimeType,
       );
