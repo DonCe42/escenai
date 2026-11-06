@@ -17,8 +17,10 @@ export type { ProjectRepositoryPort } from './application/ports/project-reposito
 export * from './application/use-cases/generate-script';
 export * from './application/use-cases/compact-script';
 export * from './application/use-cases/save-plan';
+export * from './application/use-cases/translate-plan';
 
 // Prompts (versionados con el contrato)
 export * from './application/prompts/script-prompt';
 export * from './application/prompts/compact-prompt';
+export * from './application/prompts/translate-prompt';
 export * from './application/prompts/default-style-token';

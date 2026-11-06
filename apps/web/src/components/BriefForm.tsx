@@ -52,6 +52,9 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [brief, setBrief] = useState<BriefState>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<VideoPlan | null>(null);
+  const [planEn, setPlanEn] = useState<VideoPlan | null>(null);
+  const [viewLocale, setViewLocale] = useState<'es' | 'en'>('es');
+  const [translating, setTranslating] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
   const [images, setImages] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState(false);
@@ -110,6 +113,8 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       }
       if (payload.plan) {
         setPlan(payload.plan);
+        setPlanEn(null);
+        setViewLocale(payload.plan.locale);
         // El plan se persiste en cuanto existe: recargar la página ya no lo pierde.
         void fetch('/api/projects', {
           method: 'POST',
@@ -134,7 +139,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   }
 
   function generateImages() {
-    if (plan === null) return;
+    if (activePlan === null) return;
     if (imageBatch !== null) {
       setPendingRegen(true);
       return;
@@ -143,14 +148,14 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   }
 
   async function runImages() {
-    if (plan === null) return;
+    if (activePlan === null) return;
     setLoadingImages(true);
     setImageError(null);
     try {
       const response = await fetch('/api/images', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: activePlan }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         batchId?: string;
@@ -172,14 +177,14 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   }
 
   async function generateVoice() {
-    if (plan === null) return;
+    if (activePlan === null) return;
     setLoadingVoice(true);
     setVoiceError(null);
     try {
       const response = await fetch('/api/voice', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan: activePlan }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         batchId?: string;
@@ -202,15 +207,61 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     }
   }
 
-  async function compact() {
+  async function switchLocale(target: 'es' | 'en') {
     if (plan === null) return;
+    if (target === viewLocale) return;
+
+    // Cambiar de idioma invalida la voz y el video (el audio es de otro idioma),
+    // pero no las imágenes: el plan traducido conserva los prompts.
+    setVoice({});
+    setVoiceTotal(null);
+    setAudioBatch(null);
+    setVideoUrl(null);
+
+    if (target === 'es') {
+      setViewLocale('es');
+      return;
+    }
+    if (planEn !== null) {
+      setViewLocale('en');
+      return;
+    }
+
+    setTranslating(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/script/translate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ plan, locale: 'en' }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        plan?: VideoPlan;
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.plan === undefined) {
+        setError({ code: payload.code ?? 'TRANSLATE', message: payload.message });
+        return;
+      }
+      setPlanEn(payload.plan);
+      setViewLocale('en');
+    } catch {
+      setError({ code: 'NETWORK' });
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  async function compact() {
+    if (activePlan === null) return;
     setCompacting(true);
     setCompactError(null);
     try {
       const response = await fetch('/api/script/compact', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan, duracionObjetivoS: plan.duracionObjetivoS }),
+        body: JSON.stringify({ plan: activePlan, duracionObjetivoS: activePlan.duracionObjetivoS }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         plan?: VideoPlan;
@@ -222,7 +273,8 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         return;
       }
       // Las imágenes siguen sirviendo (los prompts no cambian); la voz hay que rehacerla.
-      setPlan(payload.plan);
+      if (viewLocale === 'en') setPlanEn(payload.plan);
+      else setPlan(payload.plan);
       if (projectId !== null) {
         void fetch(`/api/projects/${projectId}/versions`, {
           method: 'POST',
@@ -242,14 +294,14 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   }
 
   async function renderVideo() {
-    if (plan === null || imageBatch === null || audioBatch === null) return;
+    if (activePlan === null || imageBatch === null || audioBatch === null) return;
     setLoadingRender(true);
     setRenderError(null);
     try {
       const response = await fetch('/api/render', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ plan, imageBatch, audioBatch, formato }),
+        body: JSON.stringify({ plan: activePlan, imageBatch, audioBatch, formato }),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         url?: string;
@@ -287,7 +339,9 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     return () => window.removeEventListener('beforeunload', handler);
   }, [brief, plan]);
 
-  const total = plan?.escenas.reduce((sum, scene) => sum + scene.duracionEstimadaS, 0) ?? 0;
+  // El idioma visible decide qué plan se opera: imágenes se comparten, voz no.
+  const activePlan = viewLocale === 'en' && planEn !== null ? planEn : plan;
+  const total = activePlan?.escenas.reduce((sum, scene) => sum + scene.duracionEstimadaS, 0) ?? 0;
 
   return (
     <div className="mt-8">
@@ -366,14 +420,33 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         </div>
       )}
 
-      {plan !== null && (
+      {activePlan !== null && (
         <section className="mt-10">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h2 className="text-lg font-semibold">{plan.titulo}</h2>
+            <h2 className="text-lg font-semibold">{activePlan.titulo}</h2>
             <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-1 rounded-full border border-[var(--line)] p-0.5 text-[11px]">
+                {(['es', 'en'] as const).map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => void switchLocale(code)}
+                    disabled={translating || busy}
+                    aria-pressed={viewLocale === code}
+                    className={`rounded-full px-2 py-0.5 uppercase transition ${
+                      viewLocale === code
+                        ? 'bg-[var(--accent)] font-semibold text-[#04120a]'
+                        : 'text-[var(--muted)] hover:text-[var(--text)]'
+                    } disabled:opacity-40`}
+                  >
+                    {code}
+                  </button>
+                ))}
+              </div>
+              {translating && <span className="text-xs text-[var(--muted)]">{dict.create.translating}</span>}
               <p className="font-mono text-xs text-[var(--muted)]">
-                {dict.create.total}: {total.toFixed(1)} s / {plan.duracionObjetivoS} s ·{' '}
-                {plan.escenas.length} {dict.create.scenes}
+                {dict.create.total}: {total.toFixed(1)} s / {activePlan.duracionObjetivoS} s ·{' '}
+                {activePlan.escenas.length} {dict.create.scenes}
               </p>
               <button
                 type="button"
@@ -462,10 +535,10 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
           {voiceTotal !== null && (
             <p className="mt-4 font-mono text-xs text-[var(--muted)]">
               {dict.create.voiceTotal}: {(voiceTotal / 1000).toFixed(1)} s
-              {voiceTotal > plan.duracionObjetivoS * 1000 * 1.15 && (
+              {voiceTotal > activePlan.duracionObjetivoS * 1000 * 1.15 && (
                 <span className="ml-2 text-amber-300">{dict.create.voiceOverBudget}</span>
               )}
-              {voiceTotal > plan.duracionObjetivoS * 1000 * 1.15 && (
+              {voiceTotal > activePlan.duracionObjetivoS * 1000 * 1.15 && (
                 <button
                   type="button"
                   onClick={compact}
@@ -479,7 +552,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
           )}
 
           <ol className="mt-5 space-y-3">
-            {plan.escenas.map((scene, index) => (
+            {activePlan.escenas.map((scene, index) => (
               <li
                 key={scene.id}
                 className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-4"

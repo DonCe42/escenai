@@ -68,6 +68,7 @@ export interface Dictionary {
     readonly regenBody: string;
     readonly regenConfirm: string;
     readonly format: string;
+    readonly translating: string;
     readonly compact: string;
     readonly compacting: string;
   };
@@ -164,6 +165,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       regenBody: 'Vuelve a llamar al proveedor para las siete escenas y consume cuota otra vez. La voz y el video actuales se descartan.',
       regenConfirm: 'Regenerar',
       format: 'Formato del video',
+      translating: 'Traduciendo al inglés…',
       compact: 'Recortar guion',
       compacting: 'Recortando…',
     },
@@ -258,6 +260,7 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       regenBody: 'Calls the provider again for all seven scenes and burns quota again. The current voice and video are discarded.',
       regenConfirm: 'Regenerate',
       format: 'Video format',
+      translating: 'Translating to Spanish…',
       compact: 'Trim script',
       compacting: 'Trimming…',
     },
