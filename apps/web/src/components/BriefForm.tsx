@@ -65,6 +65,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
   const [loadingRender, setLoadingRender] = useState(false);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [compacting, setCompacting] = useState(false);
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [compactError, setCompactError] = useState<string | null>(null);
 
   function update<K extends keyof BriefState>(key: K, value: BriefState[K]) {
@@ -84,6 +85,7 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
     setVideoUrl(null);
     setImageBatch(null);
     setAudioBatch(null);
+    setProjectId(null);
 
     try {
       const response = await fetch('/api/script', {
@@ -103,7 +105,24 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
         setError({ code: payload.code ?? 'UNKNOWN', message: payload.message, issues: payload.issues });
         return;
       }
-      if (payload.plan) setPlan(payload.plan);
+      if (payload.plan) {
+        setPlan(payload.plan);
+        // El plan se persiste en cuanto existe: recargar la página ya no lo pierde.
+        void fetch('/api/projects', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            nombre: brief.que.slice(0, 60) || payload.plan.titulo,
+            plan: payload.plan,
+          }),
+        })
+          .then(async (saved) => {
+            if (!saved.ok) return;
+            const body = (await saved.json()) as { project?: { id: string } };
+            if (body.project?.id) setProjectId(body.project.id);
+          })
+          .catch(() => undefined);
+      }
     } catch {
       setError({ code: 'NETWORK' });
     } finally {
@@ -192,6 +211,13 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
       }
       // Las imágenes siguen sirviendo (los prompts no cambian); la voz hay que rehacerla.
       setPlan(payload.plan);
+      if (projectId !== null) {
+        void fetch(`/api/projects/${projectId}/versions`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ plan: payload.plan, source: 'compacted' }),
+        }).catch(() => undefined);
+      }
       setVoice({});
       setVoiceTotal(null);
       setAudioBatch(null);
@@ -376,6 +402,15 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
           {renderError !== null && (
             <p className="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2 text-xs text-red-200">
               {renderError}
+            </p>
+          )}
+
+          {projectId !== null && (
+            <p className="mt-4 text-xs text-[var(--muted)]">
+              {dict.projects.saved} ·{' '}
+              <a href={`/projects/${projectId}`} className="text-[var(--accent)] underline underline-offset-2">
+                {dict.projects.openProject}
+              </a>
             </p>
           )}
 

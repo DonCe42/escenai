@@ -12,12 +12,15 @@ import {
   VertexKeyVerifier,
   VertexTextModel,
   FileStorage,
+  FileProjectRepository,
 } from '@escenai/adapters';
 import { ProviderNotConfiguredError } from '@escenai/core';
 import type {
+  ClockPort,
   ImageModelPort,
   KeyVerifierPort,
   VideoClipPort,
+  ProjectRepositoryPort,
   ProviderId,
   SpeechPort,
   SecretStorePort,
@@ -45,6 +48,8 @@ export interface Container {
   readonly detectImageProvider: (workspaceId: string) => Promise<ImageProviderKind | null>;
   readonly speechModel: (workspaceId: string) => SpeechPort;
   readonly storage: StoragePort;
+  readonly projects: ProjectRepositoryPort;
+  readonly clock: ClockPort;
 }
 
 /**
@@ -52,6 +57,7 @@ export interface Container {
  * Cuando exista el adaptador de Supabase, se cambia aquí y en ningún otro sitio.
  */
 export function createContainer(): Container {
+  const clock = new SystemClock();
   const masterKey = process.env.MASTER_KEY ?? '';
   const masterKeyMissing = masterKey.length === 0;
 
@@ -60,7 +66,7 @@ export function createContainer(): Container {
     : new AesGcmSecretStore(
         new FileSecretRepository(join(process.cwd(), '.data', 'secrets.json')),
         masterKey,
-        new SystemClock(),
+        clock,
       );
 
   function keyFor(workspaceId: string, provider: ProviderId): Promise<string> {
@@ -102,6 +108,8 @@ export function createContainer(): Container {
         ...(process.env.MINIMAX_SPEECH_MODEL ? { model: process.env.MINIMAX_SPEECH_MODEL } : {}),
       }),
     storage: new FileStorage(join(process.cwd(), '.data', 'assets')),
+    projects: new FileProjectRepository(join(process.cwd(), '.data', 'projects')),
+    clock,
     verifier: {
       verify: (provider, apiKey) =>
         provider === 'google-vertex'

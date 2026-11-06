@@ -8,6 +8,7 @@ export * from './providers/google/vertex-text-model';
 export * from './providers/google/vertex-key-verifier';
 export * from './providers/google/vertex-image-model';
 export * from './storage/file-storage';
+export * from './storage/file-project-repository';
 export * from './providers/minimax/speech';
 export * from './providers/minimax/image-model';
 export * from './providers/minimax/video-clip';

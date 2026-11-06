@@ -4,7 +4,12 @@ export type { Locale };
 export { LOCALE_COOKIE } from './locale';
 
 export interface Dictionary {
-  readonly nav: { readonly create: string; readonly settings: string; readonly github: string };
+  readonly nav: {
+    readonly create: string;
+    readonly projects: string;
+    readonly settings: string;
+    readonly github: string;
+  };
   readonly home: {
     readonly kicker: string;
     readonly title: string;
@@ -62,12 +67,27 @@ export interface Dictionary {
     readonly compact: string;
     readonly compacting: string;
   };
+  readonly projects: {
+    readonly title: string;
+    readonly new: string;
+    readonly empty: string;
+    readonly versions: string;
+    readonly words: string;
+    readonly scenes: string;
+    readonly active: string;
+    readonly activate: string;
+    readonly activating: string;
+    readonly activateFailed: string;
+    readonly activePlan: string;
+    readonly saved: string;
+    readonly openProject: string;
+  };
   readonly common: { readonly loading: string; readonly error: string; readonly close: string };
 }
 
 export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } = {
   es: {
-    nav: { create: 'Crear', settings: 'Ajustes', github: 'GitHub' },
+    nav: { create: 'Crear', projects: 'Proyectos', settings: 'Ajustes', github: 'GitHub' },
     home: {
       kicker: 'MVP en construcción',
       title: 'Tu brief entra. Tu campaña sale.',
@@ -134,10 +154,25 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
       compact: 'Recortar guion',
       compacting: 'Recortando…',
     },
+    projects: {
+      title: 'Proyectos',
+      new: 'Nuevo video',
+      empty: 'Todavía no hay proyectos. Genera un guion y se guarda solo.',
+      versions: 'versiones',
+      words: 'palabras',
+      scenes: 'escenas',
+      active: 'activa',
+      activate: 'Usar esta versión',
+      activating: 'Aplicando…',
+      activateFailed: 'No se pudo cambiar de versión.',
+      activePlan: 'Plan de la versión activa',
+      saved: 'Guardado como proyecto',
+      openProject: 'Abrir proyecto',
+    },
     common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
   },
   en: {
-    nav: { create: 'Create', settings: 'Settings', github: 'GitHub' },
+    nav: { create: 'Create', projects: 'Projects', settings: 'Settings', github: 'GitHub' },
     home: {
       kicker: 'MVP in progress',
       title: 'Your brief goes in. Your campaign comes out.',
@@ -203,6 +238,21 @@ export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } 
         'This calls the real providers: images 3-5 min, voice ~20 s, render 3-5 min. The counter keeps running until it finishes.',
       compact: 'Trim script',
       compacting: 'Trimming…',
+    },
+    projects: {
+      title: 'Projects',
+      new: 'New video',
+      empty: 'No projects yet. Generate a script and it saves itself.',
+      versions: 'versions',
+      words: 'words',
+      scenes: 'scenes',
+      active: 'active',
+      activate: 'Use this version',
+      activating: 'Applying…',
+      activateFailed: 'Could not switch version.',
+      activePlan: 'Active version plan',
+      saved: 'Saved as project',
+      openProject: 'Open project',
     },
     common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
   },

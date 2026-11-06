@@ -13,6 +13,9 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
         <Link href="/new" className="transition hover:text-[var(--text)]">
           {dict.nav.create}
         </Link>
+        <Link href="/projects" className="transition hover:text-[var(--text)]">
+          {dict.nav.projects}
+        </Link>
         <Link href="/settings" className="transition hover:text-[var(--text)]">
           {dict.nav.settings}
         </Link>
