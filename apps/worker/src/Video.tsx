@@ -120,25 +120,38 @@ function Karaoke({
   const { fps } = useVideoConfig();
   const currentMs = (frame / fps) * 1000;
 
-  // Se muestran las palabras de la escena en dos líneas, resaltando la que suena.
+  // Dos líneas de tres palabras como máximo, siempre alrededor de la que suena.
+  // Pintar la escena entera hacía bloques de cuatro líneas ilegibles en narraciones largas.
   const words = scene.words;
   if (words.length === 0) return null;
 
-  const perLine = Math.ceil(words.length / 2);
-  const lines = [words.slice(0, perLine), words.slice(perLine)];
+  const PER_LINE = 3;
+  const VISIBLE = PER_LINE * 2;
+  const spoken = words.findIndex((word) => currentMs >= word.startMs - 40 && currentMs <= word.endMs + 60);
+  const primera = words[0];
+  const index =
+    spoken === -1 ? (primera !== undefined && currentMs < primera.startMs ? 0 : words.length - 1) : spoken;
+  const first = Math.max(0, Math.min(index - PER_LINE + 1, Math.max(0, words.length - VISIBLE)));
+  const visible = words.slice(first, first + VISIBLE);
+  const lines = [visible.slice(0, PER_LINE), visible.slice(PER_LINE)];
 
   return (
     <AbsoluteFill style={{ justifyContent: 'flex-end', paddingBottom: spec.safeBottom }}>
       <div
         style={{
           margin: '0 auto',
-          maxWidth: Math.round(900 * scale),
+          maxWidth: Math.round(820 * scale),
           textAlign: 'center',
           fontFamily: FONT,
           fontSize: Math.round(52 * scale),
           fontWeight: 600,
           lineHeight: 1.25,
-          textShadow: '0 4px 18px rgba(0,0,0,0.75)',
+          textShadow: '0 4px 18px rgba(0,0,0,0.85)',
+          // El blanco sobre ilustración clara se pierde: la caja garantiza contraste.
+          backgroundColor: 'rgba(0,0,0,0.55)',
+          borderRadius: Math.round(18 * scale),
+          padding: `${Math.round(10 * scale)}px ${Math.round(22 * scale)}px`,
+          width: 'fit-content',
         }}
       >
         {lines.map((line, index) => (
