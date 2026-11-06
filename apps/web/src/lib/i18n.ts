@@ -1,0 +1,113 @@
+import type { Locale } from './locale';
+
+export type { Locale };
+export { LOCALE_COOKIE } from './locale';
+
+export interface Dictionary {
+  readonly nav: { readonly settings: string; readonly github: string };
+  readonly home: {
+    readonly kicker: string;
+    readonly title: string;
+    readonly subtitle: string;
+    readonly cta: string;
+    readonly stepsTitle: string;
+    readonly steps: readonly (readonly [string, string])[];
+    readonly footnote: string;
+  };
+  readonly settings: {
+    readonly title: string;
+    readonly subtitle: string;
+    readonly provider: string;
+    readonly apiKey: string;
+    readonly placeholder: string;
+    readonly save: string;
+    readonly saving: string;
+    readonly remove: string;
+    readonly saved: string;
+    readonly notVerified: string;
+    readonly empty: string;
+    readonly demoBanner: string;
+    readonly missingMasterKey: string;
+    readonly maskedNote: string;
+  };
+  readonly common: { readonly loading: string; readonly error: string; readonly close: string };
+}
+
+export const dictionaries: { readonly es: Dictionary; readonly en: Dictionary } = {
+  es: {
+    nav: { settings: 'Ajustes', github: 'GitHub' },
+    home: {
+      kicker: 'MVP en construcción',
+      title: 'Tu brief entra. Tu campaña sale.',
+      subtitle:
+        'Escenai convierte una idea en video vertical con voz, texto animado y subtítulos, usando tus propias API keys. Sin suscripción, sin intermediarios.',
+      cta: 'Configurar mis keys',
+      stepsTitle: 'Cómo funciona',
+      steps: [
+        ['Brief', 'Cuatro campos: qué ofreces, a quién, qué debe sentir y qué debe hacer.'],
+        ['Guion', 'El modelo propone escenas; un validador determinista las acepta o las rechaza.'],
+        ['Video', 'Imágenes, voz con timestamps y composición con Remotion. 1080x1920.'],
+      ],
+      footnote: 'Fase 0: esqueleto, núcleo y cifrado de keys. El pipeline de video llega en la fase 3-4.',
+    },
+    settings: {
+      title: 'Ajustes',
+      subtitle: 'Tus keys se guardan cifradas con AES-256-GCM y nunca se envían al navegador.',
+      provider: 'Proveedor',
+      apiKey: 'API key',
+      placeholder: 'Pega la key aquí',
+      save: 'Guardar',
+      saving: 'Guardando…',
+      remove: 'Eliminar',
+      saved: 'Guardada',
+      notVerified: 'Sin verificar',
+      empty: 'Todavía no hay ninguna key guardada.',
+      demoBanner:
+        'Modo demo: sin login todavía. Los datos viven en .data/secrets.json de tu máquina. No uses este modo en producción.',
+      missingMasterKey:
+        'Falta MASTER_KEY en el entorno. Genera una con: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
+      maskedNote: 'Solo mostramos los últimos 4 caracteres.',
+    },
+    common: { loading: 'Cargando…', error: 'Algo falló', close: 'Cerrar' },
+  },
+  en: {
+    nav: { settings: 'Settings', github: 'GitHub' },
+    home: {
+      kicker: 'MVP in progress',
+      title: 'Your brief goes in. Your campaign comes out.',
+      subtitle:
+        'Escenai turns an idea into a vertical video with voice, animated text and captions, using your own API keys. No subscription, no middleman.',
+      cta: 'Set up my keys',
+      stepsTitle: 'How it works',
+      steps: [
+        ['Brief', 'Four fields: what you offer, to whom, how it should feel, what to do next.'],
+        ['Script', 'The model proposes scenes; a deterministic validator accepts or rejects them.'],
+        ['Video', 'Images, voice with timestamps and Remotion composition. 1080x1920.'],
+      ],
+      footnote: 'Phase 0: skeleton, core and key encryption. The video pipeline lands in phases 3-4.',
+    },
+    settings: {
+      title: 'Settings',
+      subtitle: 'Your keys are encrypted with AES-256-GCM and never sent to the browser.',
+      provider: 'Provider',
+      apiKey: 'API key',
+      placeholder: 'Paste your key here',
+      save: 'Save',
+      saving: 'Saving…',
+      remove: 'Remove',
+      saved: 'Saved',
+      notVerified: 'Not verified',
+      empty: 'No keys saved yet.',
+      demoBanner:
+        'Demo mode: no login yet. Data lives in .data/secrets.json on your machine. Do not use this mode in production.',
+      missingMasterKey:
+        'MASTER_KEY is missing. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'base64\'))"',
+      maskedNote: 'Only the last 4 characters are shown.',
+    },
+    common: { loading: 'Loading…', error: 'Something failed', close: 'Close' },
+  },
+};
+
+export function getDictionary(locale: Locale): Dictionary {
+  return dictionaries[locale];
+}

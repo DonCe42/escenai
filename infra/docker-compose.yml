@@ -1,0 +1,43 @@
+# Infraestructura local de Escenai.
+#   docker compose -f infra/docker-compose.yml up -d
+#
+# Fase 0: base de datos y cola. La web y el worker se añaden en la fase 4,
+# cuando exista el Dockerfile del worker con Chromium y ffmpeg.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: escenai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: escenai
+      POSTGRES_PASSWORD: escenai
+      POSTGRES_DB: escenai
+    ports:
+      - "5432:5432"
+    volumes:
+      - escenai-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U escenai -d escenai"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: escenai-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - escenai-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  escenai-pgdata:
+  escenai-redis:

@@ -1,0 +1,8 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm 12 bloquea los scripts de instalación por defecto.
+# esbuild los necesita para bajar su binario; sin esto, vitest no arranca.
+allowBuilds:
+  esbuild: true
