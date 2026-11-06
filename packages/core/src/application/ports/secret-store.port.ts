@@ -1,4 +1,4 @@
-export type ProviderId = 'google' | 'minimax';
+export type ProviderId = 'google' | 'google-vertex' | 'minimax';
 
 export interface SecretSummary {
   readonly provider: ProviderId;
@@ -27,7 +27,13 @@ export interface SecretRepositoryPort {
 }
 
 export interface SecretStorePort {
-  save(workspaceId: string, provider: ProviderId, apiKey: string): Promise<SecretSummary>;
+  /** `displayHint` permite mostrar algo legible (p. ej. el project_id de una cuenta de servicio). */
+  save(
+    workspaceId: string,
+    provider: ProviderId,
+    apiKey: string,
+    displayHint?: string,
+  ): Promise<SecretSummary>;
   /** Solo para el adaptador que va a llamar al proveedor. Nunca se devuelve por HTTP. */
   read(workspaceId: string, provider: ProviderId): Promise<string>;
   list(workspaceId: string): Promise<readonly SecretSummary[]>;

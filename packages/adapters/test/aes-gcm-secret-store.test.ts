@@ -48,9 +48,14 @@ describe('AesGcmSecretStore', () => {
     ]);
   });
 
-  it('rechaza keys demasiado cortas o con espacios', async () => {
+  it('rechaza keys demasiado cortas o con caracteres de control', async () => {
     await expect(store.save('ws1', 'google', 'corta')).rejects.toBeInstanceOf(InvalidApiKeyError);
-    await expect(store.save('ws1', 'google', 'clave con espacios')).rejects.toBeInstanceOf(InvalidApiKeyError);
+    await expect(store.save('ws1', 'google', 'clave\ncon salto')).rejects.toBeInstanceOf(InvalidApiKeyError);
+  });
+
+  it('acepta credenciales con espacios internos, como el JSON de una cuenta de servicio', async () => {
+    const json = '{"type":"service_account","private_key":"-----BEGIN PRIVATE KEY----- abc"}';
+    await expect(store.save('ws1', 'google-vertex', json)).resolves.toMatchObject({ provider: 'google-vertex' });
   });
 
   it('falla claro si no hay key guardada', async () => {

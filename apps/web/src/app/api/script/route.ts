@@ -64,9 +64,14 @@ export async function POST(request: Request) {
     colores: [],
   };
 
+  const kind = await container.detectTextProvider(workspace.id);
+  if (kind === null) {
+    return NextResponse.json({ code: 'KEY_REQUIRED', provider: 'google' }, { status: 412 });
+  }
+
   try {
     const result = await generateScript(
-      { text: container.textModel(workspace.id) },
+      { text: container.textModel(workspace.id, kind) },
       { brand, brief, locale },
     );
 

@@ -6,7 +6,7 @@ import { getWorkspace } from '@/lib/workspace';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const PROVIDERS: readonly ProviderId[] = ['google', 'minimax'];
+const PROVIDERS: readonly ProviderId[] = ['google', 'google-vertex', 'minimax'];
 
 function isProvider(value: unknown): value is ProviderId {
   return typeof value === 'string' && (PROVIDERS as readonly string[]).includes(value);
@@ -45,14 +45,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'INVALID_API_KEY' }, { status: 400 });
   }
 
+  // La cuenta de servicio se guarda compacta: sin espacios ni saltos de línea,
+  // y validada antes de tocar el almacén.
+  let normalized = apiKey.trim();
+  let displayHint: string | undefined;
+  if (provider === 'google-vertex') {
+    try {
+      const parsed = JSON.parse(normalized) as {
+        type?: string;
+        private_key?: string;
+        project_id?: string;
+      };
+      if (parsed.type !== 'service_account' || typeof parsed.private_key !== 'string') {
+        return NextResponse.json({ error: 'INVALID_SERVICE_ACCOUNT' }, { status: 400 });
+      }
+      normalized = JSON.stringify(parsed);
+      displayHint = parsed.project_id;
+    } catch {
+      return NextResponse.json({ error: 'INVALID_SERVICE_ACCOUNT' }, { status: 400 });
+    }
+  }
+
   const workspace = await getWorkspace();
 
   try {
-    const secret = await container.secrets.save(workspace.id, provider, apiKey);
+    const secret = await container.secrets.save(workspace.id, provider, normalized, displayHint);
 
     // Guardar y verificar son pasos distintos: si el proveedor rechaza la key,
     // el usuario tiene que enterarse aquí y no tres pantallas más adelante.
-    const check = await container.verifier.verify(provider, apiKey);
+    const check = await container.verifier.verify(provider, normalized);
     if (check.ok) await container.secrets.markVerified(workspace.id, provider, true);
 
     return NextResponse.json({ secret: { ...secret, verified: check.ok }, check }, { status: 201 });

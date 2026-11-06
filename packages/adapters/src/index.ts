@@ -3,5 +3,8 @@ export * from './secrets/file-secret-repository';
 export * from './providers/google/text-model';
 export * from './providers/google/image-model';
 export * from './providers/google/key-verifier';
+export * from './providers/google/vertex-credentials';
+export * from './providers/google/vertex-text-model';
+export * from './providers/google/vertex-key-verifier';
 export * from './providers/minimax/speech';
 export * from './clock/system-clock';

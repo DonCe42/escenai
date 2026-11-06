@@ -15,9 +15,16 @@ interface SettingsClientProps {
 }
 
 const PROVIDERS: readonly { id: ProviderId; name: string; role: string }[] = [
-  { id: 'google', name: 'Google', role: 'Gemini · imágenes y texto' },
+  { id: 'google', name: 'Google AI Studio', role: 'API key AIza… · texto e imágenes' },
+  { id: 'google-vertex', name: 'Google Vertex', role: 'cuenta de servicio (JSON) · texto e imágenes' },
   { id: 'minimax', name: 'MiniMax', role: 'voz y música' },
 ];
+
+const PROVIDER_LABELS: Record<string, string> = {
+  google: 'Google AI Studio',
+  'google-vertex': 'Google Vertex',
+  minimax: 'MiniMax',
+};
 
 function formatStamp(iso: string): string {
   return iso.slice(0, 16).replace('T', ' ');
@@ -175,7 +182,7 @@ export function SettingsClient({
             {initialSecrets.map((secret) => (
               <li key={secret.provider} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium capitalize">{secret.provider}</p>
+                  <p className="text-sm font-medium">{PROVIDER_LABELS[secret.provider] ?? secret.provider}</p>
                   <p className="mt-0.5 font-mono text-xs text-[var(--muted)]">
                     {secret.masked} · {formatStamp(secret.updatedAt)} ·{' '}
                     {secret.verified ? dict.settings.verified : dict.settings.notVerified}

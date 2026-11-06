@@ -59,13 +59,25 @@ export class AesGcmSecretStore implements SecretStorePort {
     private readonly clock: ClockPort,
   ) {}
 
-  async save(workspaceId: string, provider: ProviderId, apiKey: string): Promise<SecretSummary> {
+  async save(
+    workspaceId: string,
+    provider: ProviderId,
+    apiKey: string,
+    displayHint?: string,
+  ): Promise<SecretSummary> {
     const trimmed = apiKey.trim();
     if (trimmed.length < MIN_API_KEY_LENGTH) {
       throw new InvalidApiKeyError('La API key es demasiado corta.');
     }
-    if (/\s/.test(trimmed)) {
-      throw new InvalidApiKeyError('La API key no puede contener espacios.');
+    // Los espacios internos son legítimos: una cuenta de servicio es un JSON.
+    // Lo que no puede haber son caracteres de control (saltos de línea, tabuladores)
+    // que rompen la cabecera HTTP o el JSON al guardarlo.
+    const hasControlChar = Array.from(trimmed).some((char) => {
+      const code = char.charCodeAt(0);
+      return code < 32 || code === 127;
+    });
+    if (hasControlChar) {
+      throw new InvalidApiKeyError('La credencial contiene caracteres de control.');
     }
 
     const key = await this.getKey();
@@ -82,7 +94,7 @@ export class AesGcmSecretStore implements SecretStorePort {
       ciphertext: toBase64(ciphertext),
       iv: toBase64(iv),
       tag: toBase64(tag),
-      masked: maskKey(trimmed),
+      masked: displayHint !== undefined && displayHint.length > 0 ? `••••${displayHint}` : maskKey(trimmed),
       updatedAt: this.clock.nowIso(),
       verified: false,
     };
