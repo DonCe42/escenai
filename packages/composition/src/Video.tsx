@@ -296,7 +296,15 @@ function ScreenText({
   spec: FormatSpec;
 }) {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
+
+  // El tamaño se calcula para que cada línea del plan quepa en UN renglón: con
+  // 96 px fijos, un titular largo hacía wrap, sus dos renglones se tocaban
+  // (line-height 1.02) y la segunda línea del titular se le montaba encima.
+  const usable = width - spec.sidePadding * 2;
+  const longest = Math.max(...lines.map((line) => line.length), 1);
+  const cap = lines.length > 1 ? 84 : 96;
+  const fontSize = Math.round(Math.min(cap, usable / (longest * 0.66)) * scale);
 
   return (
     <AbsoluteFill
@@ -308,7 +316,7 @@ function ScreenText({
         paddingLeft: spec.sidePadding,
         paddingRight: spec.sidePadding,
         paddingBottom: spec.safeBottom * 1.35,
-        gap: 12 * scale,
+        gap: 34 * scale,
       }}
     >
       {lines.map((line, index) => {
@@ -329,8 +337,8 @@ function ScreenText({
               transform: `translateY(${y}px)`,
               color: index === lines.length - 1 ? accent : '#ffffff',
               fontFamily: FONT,
-              fontSize: Math.round(96 * scale),
-              lineHeight: 1.02,
+              fontSize,
+              lineHeight: 1.16,
               fontWeight: 800,
               letterSpacing: '-0.02em',
               textTransform: 'uppercase',
