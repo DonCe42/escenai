@@ -14,3 +14,10 @@ node_modules
 **/.data
 apps/worker/public/renders
 *.log
+
+# fixtures y documentación interna no entran en la imagen
+apps/worker/public/r4-test/
+03_Referencias/
+02_Plan/
+01_Arquitectura/
+00_Producto/

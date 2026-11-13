@@ -50,3 +50,6 @@ apps/worker/public/renders/
 01_Arquitectura/
 02_Plan/
 03_Referencias/
+
+# fixtures pesados del test de sonido (assets reales copiados)
+apps/worker/public/r4-test/

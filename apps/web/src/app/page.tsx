@@ -1,64 +1,183 @@
 import Link from 'next/link';
-import { SiteHeader } from '@/components/SiteHeader';
-import { getDictionary } from '@/lib/i18n';
+import { LocaleSwitch } from '@/components/LocaleSwitch';
+import { LANDING } from '@/lib/landing';
 import { getLocale } from '@/lib/locale-server';
 
+/**
+ * Landing. La regla que cambió respecto a la v1: el producto se demuestra antes
+ * de pedir nada. El video del hero es un render real de este pipeline, y el
+ * precio se enseña con sus números en vez de esconderse detrás de un "empieza gratis".
+ */
 export default async function HomePage() {
   const locale = await getLocale();
-  const dict = getDictionary(locale);
+  const t = LANDING[locale];
 
   return (
-    <main className="min-h-screen">
-      <SiteHeader locale={locale} dict={dict} />
-
-      <section className="mx-auto w-full max-w-5xl px-6 pt-16 pb-20">
-        <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--line)] px-3 py-1 text-xs text-[var(--muted)]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
-          {dict.home.kicker}
-        </p>
-
-        <h1 className="max-w-3xl text-5xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
-          {dict.home.title}
-        </h1>
-
-        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[var(--muted)]">
-          {dict.home.subtitle}
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center gap-4">
-          <Link
-            href="/settings"
-            className="rounded-lg bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-[#04120a] transition hover:brightness-110"
-          >
-            {dict.home.cta}
+    <main className="lp">
+      <header className="lp-nav">
+        <div className="lp-wrap lp-nav-inner">
+          <Link href="/" className="wordmark">
+            ESCEN<b>A</b>I
           </Link>
-          <a
-            href="https://github.com/DonCe42"
-            className="text-sm text-[var(--muted)] underline decoration-[var(--line)] underline-offset-4 transition hover:text-[var(--text)]"
-            target="_blank"
-            rel="noreferrer"
-          >
-            GitHub / DonCe42
-          </a>
+          <nav className="lp-nav-links">
+            <Link href="/new">{t.nav.create}</Link>
+            <Link href="/projects">{t.nav.projects}</Link>
+            <Link href="/settings">{t.nav.settings}</Link>
+            <a href="https://github.com/DonCe42/escenai" target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+          </nav>
+          <span className="lp-nav-spacer" />
+          <LocaleSwitch locale={locale} />
+          <Link href="/new" className="btn">
+            {t.nav.cta}
+          </Link>
         </div>
+      </header>
 
-        <div className="mt-20 border-t border-[var(--line)] pt-10">
-          <h2 className="text-xs font-semibold tracking-[0.2em] text-[var(--muted)] uppercase">
-            {dict.home.stepsTitle}
-          </h2>
-          <ol className="mt-6 grid gap-6 sm:grid-cols-3">
-            {dict.home.steps.map(([title, body], index) => (
-              <li key={title} className="rounded-xl border border-[var(--line)] bg-[var(--panel)] p-5">
-                <span className="text-xs text-[var(--accent)]">0{index + 1}</span>
-                <h3 className="mt-2 text-base font-semibold">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">{body}</p>
-              </li>
+      <div className="lp-wrap">
+        <section className="lp-hero">
+          <div>
+            <span className="lp-kicker">
+              <i />
+              {t.hero.kicker}
+            </span>
+            <h1 className="lp-h1">
+              {t.hero.titleLead}
+              <em>{t.hero.titleAccent}</em>
+            </h1>
+            <p className="lp-sub">{t.hero.subtitle}</p>
+            <div className="lp-actions">
+              <Link href="/new" className="btn" style={{ height: 42, padding: '0 20px' }}>
+                {t.hero.ctaPrimary}
+              </Link>
+              <a href="#ejemplo" className="lp-link">
+                {t.hero.ctaSecondary}
+              </a>
+            </div>
+            <p className="lp-note">{t.hero.note}</p>
+          </div>
+
+          <div className="lp-phone">
+            <div className="lp-phone-frame">
+              <video
+                src="/landing/demo-loop.mp4"
+                poster="/landing/demo-poster.jpg"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+              />
+            </div>
+            <span className="lp-chip a">{t.hero.badge}</span>
+            <span className="lp-chip b">{t.hero.badgeCost}</span>
+          </div>
+        </section>
+
+        <section className="lp-stats" aria-label="Datos del ejemplo">
+          {t.stats.map((stat) => (
+            <div className="lp-stat" key={stat.label}>
+              <b>{stat.value}</b>
+              <span>{stat.label}</span>
+            </div>
+          ))}
+        </section>
+
+        <section className="lp-section" id="como-funciona">
+          <div className="lp-section-head">
+            <span className="kicker">{t.how.kicker}</span>
+            <h2 className="lp-h2">{t.how.title}</h2>
+          </div>
+
+          <div className="lp-how">
+            <div className="lp-steps">
+              {t.how.steps.map((step, index) => (
+                <div className="lp-step" key={step.title}>
+                  <span className="lp-step-n">0{index + 1}</span>
+                  <div>
+                    <h3>{step.title}</h3>
+                    <p>{step.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <figure style={{ margin: 0 }}>
+              <div className="lp-shot">
+                <div className="lp-shot-bar">
+                  <i />
+                  <i />
+                  <i />
+                  <span>escenai · /studio</span>
+                </div>
+                {/* Captura real del estudio con un proyecto de 7 escenas. */}
+                <img src="/landing/studio.png" alt="El estudio de Escenai con un proyecto abierto" />
+              </div>
+              <figcaption className="lp-caption">{t.how.shotCaption}</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section className="lp-section" id="ejemplo">
+          <div className="lp-section-head">
+            <span className="kicker">{t.example.kicker}</span>
+            <h2 className="lp-h2">{t.example.title}</h2>
+          </div>
+
+          <div className="lp-example">
+            <div className="lp-poster">
+              <img src="/landing/demo-poster.jpg" alt="Fotograma del video de ejemplo" />
+            </div>
+            <div>
+              <p className="lp-sub" style={{ marginTop: 0 }}>
+                {t.example.body}
+              </p>
+              <div className="lp-breakdown">
+                {t.example.breakdown.map((row) => (
+                  <div className="lp-line" key={row.label}>
+                    <span>{row.label}</span>
+                    <b>{row.value}</b>
+                  </div>
+                ))}
+                <div className="lp-line total">
+                  <span>{t.example.totalLabel}</span>
+                  <b>{t.example.total}</b>
+                </div>
+              </div>
+              <p className="lp-caption">{t.example.note}</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="lp-section">
+          <div className="lp-section-head">
+            <span className="kicker">{t.keys.kicker}</span>
+            <h2 className="lp-h2">{t.keys.title}</h2>
+          </div>
+          <div className="lp-keys">
+            {t.keys.items.map((item) => (
+              <article className="lp-card" key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
             ))}
-          </ol>
-        </div>
+          </div>
+        </section>
 
-        <p className="mt-14 text-xs text-[var(--muted)]">{dict.home.footnote}</p>
-      </section>
+        <section className="lp-closing">
+          <h2>{t.closing.title}</h2>
+          <p>{t.closing.body}</p>
+          <Link href="/new" className="btn" style={{ height: 42, padding: '0 22px' }}>
+            {t.closing.cta}
+          </Link>
+        </section>
+
+        <footer className="lp-footer">
+          <span>{t.footer}</span>
+          <span>escenai</span>
+        </footer>
+      </div>
     </main>
   );
 }
