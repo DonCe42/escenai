@@ -28,6 +28,7 @@ export interface LandingCopy {
     readonly total: string;
     readonly totalLabel: string;
     readonly note: string;
+    readonly cta: string;
   };
   readonly keys: {
     readonly kicker: string;
@@ -47,13 +48,13 @@ const ES: LandingCopy = {
     subtitle:
       'Escenai escribe el guion, ilustra cada escena, le pone voz y lo compone en 9:16. Tú le pagas a Google y a MiniMax, no a una suscripción.',
     ctaPrimary: 'Crear mi primer video',
-    ctaSecondary: 'Ver el video de ejemplo',
+    ctaSecondary: 'Abrir el ejemplo',
     note: 'El video de la derecha lo generó este pipeline: 7 escenas, voz con timestamps y subtítulos sincronizados.',
-    badge: '54 s · 1080×1920',
+    badge: '52 s · 1080×1920',
     badgeCost: '≈ $0.31 en proveedores',
   },
   stats: [
-    { value: '54 s', label: 'de video real, vertical' },
+    { value: '52 s', label: 'de video real, vertical' },
     { value: '7', label: 'escenas con voz y karaoke' },
     { value: '$0.31', label: 'de coste en proveedores' },
     { value: '0', label: 'suscripciones o créditos' },
@@ -89,6 +90,7 @@ const ES: LandingCopy = {
     total: '$0.31',
     totalLabel: 'Total del video',
     note: 'Precios de lista al 12 nov 2026. Los tuyos pueden variar según el plan y la región.',
+    cta: 'Abrir el proyecto de ejemplo',
   },
   keys: {
     kicker: 'Sin caja negra',
@@ -125,13 +127,13 @@ const EN: LandingCopy = {
     subtitle:
       'Escenai writes the script, illustrates every scene, adds the voice and composes it in 9:16. You pay Google and MiniMax, not a subscription.',
     ctaPrimary: 'Create my first video',
-    ctaSecondary: 'Watch the example',
+    ctaSecondary: 'Open the example',
     note: 'The video on the right came out of this pipeline: 7 scenes, timestamped voice and synced captions.',
-    badge: '54 s · 1080×1920',
+    badge: '52 s · 1080×1920',
     badgeCost: '≈ $0.31 in provider costs',
   },
   stats: [
-    { value: '54 s', label: 'of real vertical video' },
+    { value: '52 s', label: 'of real vertical video' },
     { value: '7', label: 'scenes with voice and karaoke' },
     { value: '$0.31', label: 'in provider costs' },
     { value: '0', label: 'subscriptions or credits' },
@@ -167,6 +169,7 @@ const EN: LandingCopy = {
     total: '$0.31',
     totalLabel: 'Total for the video',
     note: 'List prices as of Nov 12, 2026. Yours may differ by plan and region.',
+    cta: 'Open the example project',
   },
   keys: {
     kicker: 'No black box',

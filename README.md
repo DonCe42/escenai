@@ -22,6 +22,10 @@ Escribes cuatro campos, el modelo propone el guion, y desde ahí trabajas en un 
 
 ![Landing](docs/landing.png)
 
+El ejemplo de la portada se abre en **`/demo`**: el proyecto completo en modo lectura, sin keys y sin gastar. Sale de `apps/web/public/demo/` (plan, miniaturas y MP4), así que cualquiera que clone el repositorio lo ve sin configurar nada; la página valida el plan al leerlo y falla en vez de enseñar un ejemplo que no es lo que dice ser.
+
+![El ejemplo abierto](docs/demo.png)
+
 ## Qué cuesta de verdad
 
 Precios de lista al 2026-11-12, en un solo archivo: [`apps/web/src/lib/prices.ts`](apps/web/src/lib/prices.ts).

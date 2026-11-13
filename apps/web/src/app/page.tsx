@@ -51,9 +51,9 @@ export default async function HomePage() {
               <Link href="/new" className="btn" style={{ height: 42, padding: '0 20px' }}>
                 {t.hero.ctaPrimary}
               </Link>
-              <a href="#ejemplo" className="lp-link">
+              <Link href="/demo" className="lp-link">
                 {t.hero.ctaSecondary}
-              </a>
+              </Link>
             </div>
             <p className="lp-note">{t.hero.note}</p>
           </div>
@@ -146,6 +146,9 @@ export default async function HomePage() {
                 </div>
               </div>
               <p className="lp-caption">{t.example.note}</p>
+              <Link href="/demo" className="btn" style={{ height: 40, marginTop: 8 }}>
+                {t.example.cta}
+              </Link>
             </div>
           </div>
         </section>

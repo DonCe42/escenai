@@ -1,0 +1,143 @@
+{
+ "generatedAt": "2026-11-13T15:00:00.000Z",
+ "plan": {
+  "version": 1,
+  "locale": "es",
+  "titulo": "Cold Brew en Lata para la Oficina",
+  "duracionObjetivoS": 45,
+  "styleToken": "ilustración plana vectorial, paleta de tres colores, trazo limpio, luz suave, sin texto, sin logos, sin marcas de agua",
+  "escenas": [
+   {
+    "id": "s1",
+    "rol": "hook",
+    "narracion": "El café de la oficina ya no te despierta. Son las tres de la tarde y sientes pesadez frente a la pantalla.",
+    "textoPantalla": [
+     "¿CAFÉ DE OFICINA?",
+     "YA NO FUNCIONA"
+    ],
+    "promptImagen": "Un personaje agotado sentado frente a un escritorio de oficina mirando una pantalla de computadora encendida.",
+    "movimiento": "zoom-in-lento",
+    "duracionEstimadaS": 6
+   },
+   {
+    "id": "s2",
+    "rol": "problema",
+    "narracion": "Quieres energía de verdad, pero sin tomar bebidas azucaradas ni ingerir más calorías vacías a mitad del día.",
+    "textoPantalla": [
+     "SIN AZÚCAR",
+     "SIN CALORÍAS"
+    ],
+    "promptImagen": "Un personaje de oficina rechazando una botella de bebida azucarada llena de cubos de azúcar.",
+    "movimiento": "pan-derecha",
+    "duracionEstimadaS": 7
+   },
+   {
+    "id": "s3",
+    "rol": "desarrollo",
+    "narracion": "Existe una alternativa superior. Un café extraído en frío durante horas, suave con tu estómago y lleno de sabor real.",
+    "textoPantalla": [
+     "EXTRACCIÓN EN FRÍO",
+     "SABOR REAL"
+    ],
+    "promptImagen": "Gotas de café cayendo lentamente sobre hielos dentro de un vaso transparente.",
+    "movimiento": "zoom-in-lento",
+    "duracionEstimadaS": 7
+   },
+   {
+    "id": "s4",
+    "rol": "desarrollo",
+    "narracion": "Descubre la frescura de nuestro cold brew en lata. Cero azúcar, totalmente listo para tomar donde sea que estés.",
+    "textoPantalla": [
+     "COLD BREW",
+     "EN LATA"
+    ],
+    "promptImagen": "Una lata de bebida helada cubierta de pequeñas gotas de agua condensada.",
+    "movimiento": "estatico",
+    "duracionEstimadaS": 7
+   },
+   {
+    "id": "s5",
+    "rol": "desarrollo",
+    "narracion": "Siente un impulso helado que aclara tu mente al instante para terminar tu trabajo con máxima concentración.",
+    "textoPantalla": [
+     "FRESCURA TOTAL",
+     "ENERGÍA LIMPIA"
+    ],
+    "promptImagen": "Un personaje sonriente y enfocado trabajando felizmente en su laptop en una oficina moderna.",
+    "movimiento": "pan-izquierda",
+    "duracionEstimadaS": 6
+   },
+   {
+    "id": "s6",
+    "rol": "prueba",
+    "narracion": "Es una edición limitada elaborada especialmente para los verdaderos amantes del buen café en la ciudad.",
+    "textoPantalla": [
+     "EDICIÓN LIMITADA",
+     "CANTIDADES ESCASAS"
+    ],
+    "promptImagen": "Varias latas heladas organizadas en una repisa minimalista de madera.",
+    "movimiento": "zoom-out-lento",
+    "duracionEstimadaS": 6
+   },
+   {
+    "id": "s7",
+    "rol": "cta",
+    "narracion": "Refresca tu tarde ahora mismo. Pide tu lata directamente en el enlace de nuestra biografía antes de que se agoten.",
+    "textoPantalla": [
+     "PIDE LA TUYA",
+     "LINK EN BIO"
+    ],
+    "promptImagen": "Una mano sosteniendo una lata de bebida helada recién abierta.",
+    "movimiento": "zoom-in-lento",
+    "duracionEstimadaS": 6
+   }
+  ],
+  "musicTrack": "upbeat"
+ },
+ "scenes": [
+  {
+   "id": "s1",
+   "image": "/demo/s1.jpg",
+   "durationMs": 6347,
+   "words": 22
+  },
+  {
+   "id": "s2",
+   "image": "/demo/s2.jpg",
+   "durationMs": 6817,
+   "words": 18
+  },
+  {
+   "id": "s3",
+   "image": "/demo/s3.jpg",
+   "durationMs": 8855,
+   "words": 20
+  },
+  {
+   "id": "s4",
+   "image": "/demo/s4.jpg",
+   "durationMs": 7288,
+   "words": 19
+  },
+  {
+   "id": "s5",
+   "image": "/demo/s5.jpg",
+   "durationMs": 6608,
+   "words": 17
+  },
+  {
+   "id": "s6",
+   "image": "/demo/s6.jpg",
+   "durationMs": 6504,
+   "words": 16
+  },
+  {
+   "id": "s7",
+   "image": "/demo/s7.jpg",
+   "durationMs": 6870,
+   "words": 20
+  }
+ ],
+ "videoUrl": "/demo/video.mp4",
+ "poster": "/demo/poster.jpg"
+}
