@@ -94,7 +94,7 @@ export async function POST(request: Request): Promise<Response> {
       const image = await imageModel.generate({
         prompt: `Mantén exactamente la paleta, el trazo y el estilo de la imagen de referencia. Nueva escena: ${scene.promptImagen}`,
         aspect: '9:16' as Aspect,
-        referenceImage: anchor.bytes,
+        referenceImages: [anchor.bytes],
       });
       const ref = await storage.put(
         `images/${workspace.id}/${batchId}/${scene.id}.${extensionFor(image.mimeType)}`,
