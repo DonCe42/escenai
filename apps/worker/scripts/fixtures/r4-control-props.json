@@ -1,0 +1,326 @@
+{
+  "titulo": "R4 control sin SFX",
+  "formato": "9:16",
+  "colorFondo": "#0b0d10",
+  "colorTexto": "#f5f7fa",
+  "colorAcento": "#6ee7a8",
+  "scenes": [
+    {
+      "id": "s1",
+      "textoPantalla": [
+        "Esto no es",
+        "un editor",
+        "de video."
+      ],
+      "imageSrc": "r4-test/s1.png",
+      "audioSrc": "r4-test/s1.mp3",
+      "durationMs": 7288,
+      "words": [
+        {
+          "word": "Esto",
+          "startMs": 42.667,
+          "endMs": 341.333
+        },
+        {
+          "word": "no",
+          "startMs": 384,
+          "endMs": 554.667
+        },
+        {
+          "word": "es",
+          "startMs": 597.333,
+          "endMs": 725.333
+        },
+        {
+          "word": "un",
+          "startMs": 768,
+          "endMs": 896
+        },
+        {
+          "word": "editor",
+          "startMs": 938.667,
+          "endMs": 1237.333
+        },
+        {
+          "word": "de",
+          "startMs": 1280,
+          "endMs": 1493.333
+        },
+        {
+          "word": "video.",
+          "startMs": 1536,
+          "endMs": 2005.333
+        },
+        {
+          "word": "Es",
+          "startMs": 2048,
+          "endMs": 2261.333
+        },
+        {
+          "word": "una",
+          "startMs": 2432,
+          "endMs": 2688.0
+        },
+        {
+          "word": "fábrica:",
+          "startMs": 2730.667,
+          "endMs": 3285.333
+        },
+        {
+          "word": "entra",
+          "startMs": 3328,
+          "endMs": 3882.667
+        },
+        {
+          "word": "un",
+          "startMs": 3925.333,
+          "endMs": 4053.333
+        },
+        {
+          "word": "brief,",
+          "startMs": 4096,
+          "endMs": 4522.667
+        },
+        {
+          "word": "sale",
+          "startMs": 4565.333,
+          "endMs": 5077.333
+        },
+        {
+          "word": "un",
+          "startMs": 5120,
+          "endMs": 5248
+        },
+        {
+          "word": "video",
+          "startMs": 5290.667,
+          "endMs": 5461.333
+        },
+        {
+          "word": "listo",
+          "startMs": 5504,
+          "endMs": 6058.667
+        },
+        {
+          "word": "para",
+          "startMs": 6101.333,
+          "endMs": 6314.667
+        },
+        {
+          "word": "publicar.",
+          "startMs": 6357.333,
+          "endMs": 6997.333
+        }
+      ],
+      "motion": "zoom-in-lento"
+    },
+    {
+      "id": "s2",
+      "textoPantalla": [
+        "Es una",
+        "fábrica:"
+      ],
+      "imageSrc": "r4-test/s2.png",
+      "audioSrc": "r4-test/s2.mp3",
+      "durationMs": 9038,
+      "words": [
+        {
+          "word": "Escribes",
+          "startMs": 42.667,
+          "endMs": 554.667
+        },
+        {
+          "word": "cuatro",
+          "startMs": 597.333,
+          "endMs": 938.667
+        },
+        {
+          "word": "líneas:",
+          "startMs": 981.333,
+          "endMs": 1493.333
+        },
+        {
+          "word": "qué",
+          "startMs": 1536,
+          "endMs": 1749.333
+        },
+        {
+          "word": "ofreces,",
+          "startMs": 2304,
+          "endMs": 3029.333
+        },
+        {
+          "word": "a",
+          "startMs": 3072,
+          "endMs": 3242.667
+        },
+        {
+          "word": "quién,",
+          "startMs": 3712.0,
+          "endMs": 4181.333
+        },
+        {
+          "word": "qué",
+          "startMs": 4224,
+          "endMs": 4394.667
+        },
+        {
+          "word": "debe",
+          "startMs": 4906.667,
+          "endMs": 5205.333
+        },
+        {
+          "word": "sentir",
+          "startMs": 5248,
+          "endMs": 5589.333
+        },
+        {
+          "word": "y",
+          "startMs": 5632,
+          "endMs": 5888
+        },
+        {
+          "word": "qué",
+          "startMs": 5930.667,
+          "endMs": 6485.333
+        },
+        {
+          "word": "debe",
+          "startMs": 6528,
+          "endMs": 6741.333
+        },
+        {
+          "word": "hacer.",
+          "startMs": 6784,
+          "endMs": 7253.333
+        },
+        {
+          "word": "Nada",
+          "startMs": 7296.0,
+          "endMs": 8277.333
+        },
+        {
+          "word": "más.",
+          "startMs": 8320,
+          "endMs": 8746.667
+        }
+      ],
+      "motion": "pan-derecha"
+    },
+    {
+      "id": "s3",
+      "textoPantalla": [
+        "Entra un brief,",
+        "sale un video"
+      ],
+      "imageSrc": "r4-test/s3.png",
+      "audioSrc": "r4-test/s3.mp3",
+      "durationMs": 7366,
+      "words": [
+        {
+          "word": "El",
+          "startMs": 42.667,
+          "endMs": 170.667
+        },
+        {
+          "word": "modelo",
+          "startMs": 213.333,
+          "endMs": 512
+        },
+        {
+          "word": "propone",
+          "startMs": 554.667,
+          "endMs": 1024
+        },
+        {
+          "word": "un",
+          "startMs": 1066.667,
+          "endMs": 1152
+        },
+        {
+          "word": "guion",
+          "startMs": 1194.667,
+          "endMs": 1408
+        },
+        {
+          "word": "de",
+          "startMs": 1450.667,
+          "endMs": 1578.667
+        },
+        {
+          "word": "escenas.",
+          "startMs": 1621.333,
+          "endMs": 2133.333
+        },
+        {
+          "word": "Un",
+          "startMs": 2176.0,
+          "endMs": 2432
+        },
+        {
+          "word": "validador",
+          "startMs": 2602.667,
+          "endMs": 3157.333
+        },
+        {
+          "word": "determinista",
+          "startMs": 3200.0,
+          "endMs": 3968
+        },
+        {
+          "word": "lo",
+          "startMs": 4010.667,
+          "endMs": 4138.667
+        },
+        {
+          "word": "revisa",
+          "startMs": 4181.333,
+          "endMs": 4522.667
+        },
+        {
+          "word": "y",
+          "startMs": 4565.333,
+          "endMs": 4778.667
+        },
+        {
+          "word": "lo",
+          "startMs": 4821.333,
+          "endMs": 5034.667
+        },
+        {
+          "word": "rechaza",
+          "startMs": 5077.333,
+          "endMs": 5461.333
+        },
+        {
+          "word": "si",
+          "startMs": 5504,
+          "endMs": 5802.667
+        },
+        {
+          "word": "no",
+          "startMs": 5888,
+          "endMs": 6101.333
+        },
+        {
+          "word": "cumple",
+          "startMs": 6144,
+          "endMs": 6400.0
+        },
+        {
+          "word": "las",
+          "startMs": 6442.667,
+          "endMs": 6570.667
+        },
+        {
+          "word": "reglas.",
+          "startMs": 6613.333,
+          "endMs": 7125.333
+        }
+      ],
+      "motion": "zoom-out-lento"
+    }
+  ],
+  "transition": "flash",
+  "soundDesign": false
+}
