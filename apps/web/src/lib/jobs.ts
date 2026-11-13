@@ -14,12 +14,19 @@ export type JobStatus = 'running' | 'done' | 'error';
 
 export interface JobRecord {
   readonly id: string;
-  readonly kind: 'render';
+  readonly kind: 'render' | 'produce';
   readonly projectId: string;
   readonly status: JobStatus;
   readonly progress: number;
   readonly message: string | null;
   readonly url: string | null;
+  /** Qué está haciendo ahora («imagen 3/7», «renderizando»). */
+  readonly stage?: string | null;
+  /** Pasos completados y total de pasos, para el lote de assets. */
+  readonly done?: number;
+  readonly total?: number;
+  /** Trabajo que se encadenó al terminar (el lote dispara el render). */
+  readonly followUpJobId?: string | null;
   /** Ruta del MP4 que escribe el worker. */
   readonly outputPath: string;
   readonly logPath: string;
@@ -65,10 +72,21 @@ export async function writeJob(job: JobRecord): Promise<void> {
 export async function readJob(id: string): Promise<JobRecord | null> {
   try {
     const raw = await readFile(join(jobsDir(), `${safeId(id)}.json`), 'utf8');
-    return JSON.parse(raw) as JobRecord;
+    const parsed = JSON.parse(raw) as JobRecord;
+    // Los trabajos escritos antes del lote no traen `kind`: son renders.
+    return { ...parsed, kind: parsed.kind ?? 'render' };
   } catch {
     return null;
   }
+}
+
+/** Actualiza un trabajo en curso sin tener que reescribir todos sus campos. */
+export async function updateJob(id: string, patch: Partial<JobRecord>): Promise<JobRecord | null> {
+  const job = await readJob(id);
+  if (job === null) return null;
+  const next: JobRecord = { ...job, ...patch, updatedAt: new Date().toISOString() };
+  await writeJob(next);
+  return next;
 }
 
 export async function listJobs(projectId?: string): Promise<readonly JobRecord[]> {

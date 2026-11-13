@@ -81,7 +81,10 @@ export default async function StudioPage({ params }: { params: Promise<{ id: str
   // Si hay un render en curso (o se recargó a mitad), el estudio retoma el sondeo.
   const jobs = await listJobs(project.id);
   const running = jobs.find((job) => job.status === 'running');
-  const activeJob = running === undefined ? null : { id: running.id, progress: running.progress };
+  const activeJob =
+    running === undefined
+      ? null
+      : { id: running.id, progress: running.progress, kind: running.kind };
   // El último render terminado se ofrece al abrir: el MP4 sigue en disco aunque
   // la pestaña se haya cerrado.
   const lastRender = jobs.find((job) => job.status === 'done' && job.url !== null);

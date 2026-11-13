@@ -27,6 +27,25 @@ export async function GET(
   const { id } = await context.params;
   const job = await readJob(id);
   if (job === null) return NextResponse.json({ code: 'JOB_NOT_FOUND' }, { status: 404 });
+
+  // El lote de assets escribe su estado desde este mismo proceso: si el servidor
+  // se reinició, el JSON se queda en `running` para siempre. Se detecta por la
+  // última escritura, no por memoria del proceso.
+  if (job.kind === 'produce' && job.status === 'running') {
+    const age = Date.now() - Date.parse(job.updatedAt);
+    if (Number.isFinite(age) && age > 20 * 60 * 1000) {
+      const interrupted: JobRecord = {
+        ...job,
+        status: 'error',
+        message: 'El trabajo se interrumpió (el servidor se reinició). Vuelve a lanzarlo.',
+      };
+      await writeJob(interrupted);
+      return NextResponse.json(interrupted);
+    }
+    return NextResponse.json(job);
+  }
+  if (job.kind === 'produce') return NextResponse.json(job);
+
   if (job.status !== 'running') return NextResponse.json(job);
 
   const log = await readFile(job.logPath, 'utf8').catch(() => '');

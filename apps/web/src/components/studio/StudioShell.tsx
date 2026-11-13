@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -57,6 +57,7 @@ type SaveState =
 export interface ActiveJob {
   readonly id: string;
   readonly progress: number;
+  readonly kind?: 'render' | 'produce';
 }
 
 export interface VoiceMeta {
@@ -148,6 +149,12 @@ export function StudioShell({
   const [assetError, setAssetError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(activeJob?.id ?? null);
   const [jobProgress, setJobProgress] = useState<number>(activeJob?.progress ?? 0);
+  const [jobStage, setJobStage] = useState<string | null>(null);
+  const [jobKind, setJobKind] = useState<'render' | 'produce' | null>(
+    activeJob === null ? null : (activeJob.kind ?? 'render'),
+  );
+  // Refs: el sondeo no debe re-suscribirse cuando cambia el tipo de trabajo.
+  const jobKindRef = useRef<'render' | 'produce' | null>(jobKind);
   const [renderUrl, setRenderUrl] = useState<string | null>(initialRenderUrl);
   const [renderError, setRenderError] = useState<string | null>(null);
   const [showVideo, setShowVideo] = useState(initialRenderUrl !== null);
@@ -319,6 +326,22 @@ export function StudioShell({
     })
     .map((scene) => scene.id);
   const assetsReady = scenesMissingAssets.length === 0;
+
+  // Lo que costaría «hacer video» ahora mismo: solo lo que falta, no el plan entero.
+  const pendingImages = plan.escenas.filter(
+    (scene) => assets.find((a) => a.sceneId === scene.id && a.kind === 'image')?.status !== 'ready',
+  ).length;
+  const pendingVoiceChars = plan.escenas
+    .filter(
+      (scene) => assets.find((a) => a.sceneId === scene.id && a.kind === 'voice')?.status !== 'ready',
+    )
+    .reduce((sum, scene) => sum + scene.narracion.length, 0);
+  const pendingVoices = plan.escenas.filter(
+    (scene) => assets.find((a) => a.sceneId === scene.id && a.kind === 'voice')?.status !== 'ready',
+  ).length;
+  const pendingCost =
+    pendingImages * PRICES.imagePerUnit + (pendingVoiceChars / 1000) * PRICES.speechPer1kChars;
+
   const rendering = jobId !== null;
   const elapsedRender = useElapsed(rendering);
 
@@ -345,10 +368,66 @@ export function StudioShell({
         return;
       }
       setJobProgress(0);
+      setJobStage('encolando render');
+      jobKindRef.current = 'render';
+      setJobKind('render');
       setJobId(payload.jobId);
     } catch {
       setRenderError('Sin conexión con el servidor');
     }
+  }
+
+  /**
+   * «Hacer video»: genera lo que falte (imagen y voz de cada escena) y, si todo
+   * sale, encadena el render. Es el camino de dos pasos: brief → video.
+   */
+  async function produceAssets(): Promise<void> {
+    setRenderError(null);
+    setAssetError(null);
+    if (pendingCost > 1) {
+      const ok = window.confirm(
+        `Vas a gastar ≈ ${usd(pendingCost)} en ${pendingImages} imagen(es) y ${pendingVoices} voz/voces.\n\n` +
+          'Se le paga al proveedor, no a Escenai. ¿Sigo?',
+      );
+      if (!ok) return;
+    }
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/produce`, { method: 'POST' });
+      const payload = (await response.json().catch(() => ({}))) as {
+        jobId?: string;
+        code?: string;
+        message?: string;
+      };
+      if (!response.ok || payload.jobId === undefined) {
+        setRenderError(
+          payload.code === 'JOB_RUNNING'
+            ? 'Ya hay un lote en marcha. Espera a que termine.'
+            : payload.code === 'KEY_REQUIRED'
+              ? 'Falta la API key del proveedor de imagen. Se configura en Ajustes.'
+              : payload.code === 'NOTHING_TO_DO'
+                ? 'Ya está todo generado.'
+                : (payload.message ?? payload.code ?? 'No se pudo empezar'),
+        );
+        return;
+      }
+      jobKindRef.current = 'produce';
+      setJobKind('produce');
+      setJobStage('preparando');
+      setJobProgress(0);
+      setJobId(payload.jobId);
+    } catch {
+      setRenderError('Sin conexión con el servidor');
+    }
+  }
+
+  /** Un solo botón: si falta algo, lo genera; si está todo, renderiza. */
+  function makeVideo(): void {
+    if (assetsReady) {
+      void renderVideo();
+      return;
+    }
+    void produceAssets();
   }
 
   // Sondeo del trabajo: el render corre en su propio proceso, así que la página
@@ -366,17 +445,46 @@ export function StudioShell({
           progress: number;
           url: string | null;
           message: string | null;
+          stage?: string | null;
+          followUpJobId?: string | null;
         };
         if (cancelled) return;
-        setJobProgress(job.progress);
-        if (job.status === 'done' && job.url !== null) {
-          setRenderUrl(job.url);
-          setShowVideo(true);
-          setJobId(null);
-        } else if (job.status === 'error') {
-          setRenderError(job.message ?? 'El render falló');
-          setJobId(null);
+        setJobProgress(typeof job.progress === 'number' ? job.progress : 0);
+        if (job.stage !== undefined && job.stage !== null) setJobStage(job.stage);
+        if (job.status === 'running') return;
+
+        const wasProduce = jobKindRef.current === 'produce';
+
+        // El lote encadena el render en el servidor: aquí solo se cambia de trabajo.
+        // Así el video sale aunque la pestaña se haya cerrado a mitad.
+        if (job.status === 'done' && job.followUpJobId !== undefined && job.followUpJobId !== null) {
+          jobKindRef.current = 'render';
+          setJobKind('render');
+          setJobProgress(0);
+          setJobStage('renderizando');
+          setJobId(job.followUpJobId);
+          if (wasProduce) router.refresh();
+          return;
         }
+
+        if (job.status === 'done') {
+          if (job.url !== null) {
+            setRenderUrl(job.url);
+            setShowVideo(true);
+          }
+          // Un lote parcial termina bien con aviso: se enseña sin tratarlo de error.
+          setRenderError(job.message);
+        } else {
+          setRenderError(job.message ?? (wasProduce ? 'El lote falló' : 'El render falló'));
+        }
+
+        setJobId(null);
+        setJobKind(null);
+        jobKindRef.current = null;
+        setJobStage(null);
+
+        // Las imágenes y voces nuevas están en el proyecto: hay que releerlas.
+        if (wasProduce) router.refresh();
       } catch {
         /* un fallo de red puntual no cancela el trabajo: se reintenta al siguiente tick */
       }
@@ -605,19 +713,23 @@ export function StudioShell({
         <button
           type="button"
           className="btn"
-          onClick={() => void renderVideo()}
-          disabled={!assetsReady || rendering}
+          onClick={makeVideo}
+          disabled={rendering}
           title={
             assetsReady
               ? 'Renderiza el MP4 con las imágenes y voces guardadas'
-              : `Faltan imagen o voz en: ${scenesMissingAssets.join(', ')}`
+              : `Genera ${pendingImages} imagen(es) y ${pendingVoices} voz/voces (≈ ${usd(pendingCost)}) y después renderiza`
           }
         >
           {rendering
-            ? `Renderizando… ${Math.round(jobProgress * 100)} %`
-            : renderUrl !== null
-              ? 'Renderizar otra vez'
-              : 'Renderizar video'}
+            ? jobKind === 'produce'
+              ? `Generando… ${Math.round(jobProgress * 100)} %`
+              : `Renderizando… ${Math.round(jobProgress * 100)} %`
+            : assetsReady
+              ? renderUrl !== null
+                ? 'Renderizar otra vez'
+                : 'Renderizar video'
+              : `Hacer video · ≈ ${usd(pendingCost)}`}
         </button>
       </header>
 
@@ -626,7 +738,9 @@ export function StudioShell({
         <span style={{ width: `${Math.max(3, Math.round(jobProgress * 100))}%` }} />
         <em>
           {rendering
-            ? `render ${Math.round(jobProgress * 100)} % · ${elapsedRender}s · puedes seguir editando`
+            ? `${jobKind === 'produce' ? 'generando' : 'render'} ${Math.round(jobProgress * 100)} % · ${elapsedRender}s${
+                jobStage === null ? '' : ` · ${jobStage}`
+              } · puedes seguir editando`
             : ''}
         </em>
       </div>

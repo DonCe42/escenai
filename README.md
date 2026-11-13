@@ -11,7 +11,7 @@ Escribes cuatro campos, el modelo propone el guion, y desde ahí trabajas en un 
 ## El flujo
 
 1. **Brief** en `/new`: qué ofreces, a quién, qué debe sentir y qué debe hacer. Sale un plan validado (escenas, texto en pantalla, narración, prompt de imagen).
-2. **Estudio** en `/studio/<id>`: riel de escenas, preview 9:16 real e inspector.
+2. **Estudio** en `/studio/<id>`: riel de escenas, preview 9:16 real e inspector. Un solo botón, **«Hacer video»**, genera lo que falte (imagen y voz por escena, en serie por la cuota del proveedor) y encadena el render; el trabajo sigue aunque cierres la pestaña.
    - El preview es el **mismo componente** que renderiza el worker, montado con `@remotion/player`: lo que ves es lo que sale.
    - Cada escena tiene su imagen y su voz persistidas; se generan y regeneran por separado.
    - Editas narración, texto en pantalla, movimiento y estilo de subtítulos con el validador del dominio, y los errores aparecen junto al campo culpable.
@@ -124,7 +124,7 @@ Verificado el 2026-11-12 con la imagen actual (**2,16 GB**): contenedor arriba e
 
 ## Estado
 
-Funciona de punta a punta: brief → plan → imágenes y voz por escena → música → render con sonido y transiciones → MP4. Pendiente: edición por máscara para cambiar un fondo sin regenerar la escena (R5) y proveedores alternativos (R8).
+Funciona de punta a punta: brief → plan → un botón que genera imágenes y voz, encadena el render y entrega el MP4. Pendiente: edición por máscara para cambiar un fondo sin regenerar la escena (R5) y proveedores alternativos (R8).
 
 ## Licencia
 
