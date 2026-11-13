@@ -81,4 +81,124 @@ describe('FileProjectRepository', () => {
   it('no deja salir del directorio con un id con barras', async () => {
     expect(await repo.find('../../etc/passwd')).toBeNull();
   });
+
+  it('guarda assets por escena sin tocar las versiones del plan', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+
+    const updated = await repo.saveAsset(created.id, {
+      sceneId: 's1',
+      kind: 'image',
+      status: 'ready',
+      ref: 'images/demo/s1.png',
+      mimeType: 'image/png',
+      errorCode: null,
+      updatedAt: '2026-11-06T10:10:00.000Z',
+    });
+
+    expect(updated?.assets).toHaveLength(1);
+    expect(updated?.versions).toHaveLength(1);
+
+    // Releer del disco: el asset sobrevive al proceso.
+    const reloaded = await repo.find(created.id);
+    expect(reloaded?.assets?.[0]?.ref).toBe('images/demo/s1.png');
+  });
+
+  it('reemplaza el asset de la misma escena y tipo en vez de duplicarlo', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+    const base = {
+      sceneId: 's1',
+      kind: 'voice' as const,
+      status: 'ready' as const,
+      ref: 'audio/a.mp3',
+      mimeType: 'audio/mpeg',
+      errorCode: null,
+      updatedAt: '2026-11-06T10:10:00.000Z',
+    };
+
+    await repo.saveAsset(created.id, base);
+    const updated = await repo.saveAsset(created.id, { ...base, ref: 'audio/b.mp3' });
+
+    expect(updated?.assets).toHaveLength(1);
+    expect(updated?.assets?.[0]?.ref).toBe('audio/b.mp3');
+  });
+
+  it('normaliza a [] los proyectos guardados antes de los assets', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+    const legacy: Record<string, unknown> = { ...created };
+    delete legacy.assets;
+    delete legacy.styleReferences;
+    await rm(join(dir, 'projects'), { recursive: true, force: true });
+    const { mkdir, writeFile } = await import('node:fs/promises');
+    await mkdir(join(dir, 'projects'), { recursive: true });
+    await writeFile(join(dir, 'projects', `${created.id}.json`), JSON.stringify(legacy), 'utf8');
+
+    const reloaded = await repo.find(created.id);
+    expect(reloaded?.assets).toEqual([]);
+    expect(reloaded?.styleReferences).toEqual([]);
+  });
+
+  it('guarda el tablero de estilo y sobrevive a releer del disco', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+    const updated = await repo.saveStyleReference(created.id, {
+      id: 'ref-1',
+      kind: 'producto',
+      label: 'lata cold brew',
+      ref: 'style/demo/ref-1.png',
+      mimeType: 'image/png',
+      createdAt: '2026-11-06T10:20:00.000Z',
+    });
+
+    expect(updated?.styleReferences).toHaveLength(1);
+    // El tablero no crea versiones del plan: cambiar una referencia no es cambiar el guion.
+    expect(updated?.versions).toHaveLength(1);
+
+    const reloaded = await repo.find(created.id);
+    expect(reloaded?.styleReferences?.[0]?.label).toBe('lata cold brew');
+  });
+
+  it('rechaza la séptima referencia en vez de guardarla a medias', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+    for (let index = 0; index < 6; index += 1) {
+      const saved = await repo.saveStyleReference(created.id, {
+        id: `ref-${index}`,
+        kind: 'estilo',
+        label: `pieza ${index}`,
+        ref: `style/demo/ref-${index}.png`,
+        mimeType: 'image/png',
+        createdAt: '2026-11-06T10:20:00.000Z',
+      });
+      expect(saved).not.toBeNull();
+    }
+
+    const overflow = await repo.saveStyleReference(created.id, {
+      id: 'ref-6',
+      kind: 'estilo',
+      label: 'sobra',
+      ref: 'style/demo/ref-6.png',
+      mimeType: 'image/png',
+      createdAt: '2026-11-06T10:21:00.000Z',
+    });
+
+    expect(overflow).toBeNull();
+    expect((await repo.find(created.id))?.styleReferences).toHaveLength(6);
+  });
+
+  it('quita una referencia del tablero y deja las demás', async () => {
+    const created = await repo.create({ nombre: 'A', plan, now: '2026-11-06T10:00:00.000Z' });
+    for (const id of ['ref-1', 'ref-2']) {
+      await repo.saveStyleReference(created.id, {
+        id,
+        kind: 'personaje',
+        label: id,
+        ref: `style/demo/${id}.png`,
+        mimeType: 'image/png',
+        createdAt: '2026-11-06T10:20:00.000Z',
+      });
+    }
+
+    const updated = await repo.removeStyleReference(created.id, 'ref-1', '2026-11-06T10:30:00.000Z');
+    expect(updated?.styleReferences?.map((reference) => reference.id)).toEqual(['ref-2']);
+
+    expect(await repo.removeStyleReference(created.id, 'no-existe', 'x')).toBeNull();
+  });
 });

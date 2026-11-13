@@ -1,4 +1,6 @@
+import type { SceneAsset } from '../../domain/project-assets';
 import type { ScriptProject, VersionSource } from '../../domain/script-project';
+import type { StyleReference } from '../../domain/style-reference';
 import type { VideoPlan } from '../../domain/video-plan';
 
 /**
@@ -15,5 +17,11 @@ export interface ProjectRepositoryPort {
     input: { readonly plan: VideoPlan; readonly source: VersionSource; readonly now: string },
   ): Promise<ScriptProject | null>;
   setActiveVersion(id: string, versionId: string, now: string): Promise<ScriptProject | null>;
+  /** Inserta o reemplaza el asset de una escena. No toca versiones ni timestamps del plan. */
+  saveAsset(id: string, asset: SceneAsset): Promise<ScriptProject | null>;
+  /** Añade una pieza al tablero de estilo (producto, personaje, logo). */
+  saveStyleReference(id: string, reference: StyleReference): Promise<ScriptProject | null>;
+  /** Quita una pieza del tablero. El archivo lo borra quien llama, que tiene el storage. */
+  removeStyleReference(id: string, referenceId: string, now: string): Promise<ScriptProject | null>;
   remove(id: string): Promise<boolean>;
 }

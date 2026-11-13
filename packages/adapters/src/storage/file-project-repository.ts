@@ -1,7 +1,14 @@
-import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { countPlanWords } from '@escenai/core';
-import type { ProjectRepositoryPort, ScriptProject, VersionSource, VideoPlan } from '@escenai/core';
+import { addStyleReference, countPlanWords, removeStyleReference, upsertSceneAsset } from '@escenai/core';
+import type {
+  ProjectRepositoryPort,
+  SceneAsset,
+  ScriptProject,
+  StyleReference,
+  VersionSource,
+  VideoPlan,
+} from '@escenai/core';
 
 /**
  * Proyectos y versiones en disco, un JSON por proyecto.
@@ -23,6 +30,8 @@ export class FileProjectRepository implements ProjectRepositoryPort {
       createdAt: input.now,
       updatedAt: input.now,
       activeVersionId: versionId,
+      assets: [],
+      styleReferences: [],
       versions: [
         {
           id: versionId,
@@ -92,11 +101,65 @@ export class FileProjectRepository implements ProjectRepositoryPort {
     return updated;
   }
 
+  async saveAsset(id: string, asset: SceneAsset): Promise<ScriptProject | null> {
+    const project = await this.find(id);
+    if (project === null) return null;
+
+    const updated: ScriptProject = {
+      ...project,
+      assets: upsertSceneAsset(project.assets, asset),
+      updatedAt: asset.updatedAt,
+    };
+    await this.persist(updated);
+    return updated;
+  }
+
   async remove(id: string): Promise<boolean> {
     const project = await this.find(id);
     if (project === null) return false;
     await rm(this.pathFor(id), { force: true });
     return true;
+  }
+
+  /**
+   * Añade una pieza al tablero. El tope lo aplica el dominio (`addStyleReference`):
+   * si el proyecto ya tiene seis, no se persiste nada y se devuelve `null` para
+   * que la ruta responda 409 en vez de fingir que guardó.
+   */
+  async saveStyleReference(id: string, reference: StyleReference): Promise<ScriptProject | null> {
+    const project = await this.find(id);
+    if (project === null) return null;
+
+    const added = addStyleReference(project.styleReferences, reference);
+    if (!added.ok) return null;
+
+    const updated: ScriptProject = {
+      ...project,
+      styleReferences: added.value,
+      updatedAt: reference.createdAt,
+    };
+    await this.persist(updated);
+    return updated;
+  }
+
+  async removeStyleReference(
+    id: string,
+    referenceId: string,
+    now: string,
+  ): Promise<ScriptProject | null> {
+    const project = await this.find(id);
+    if (project === null) return null;
+
+    const result = removeStyleReference(project.styleReferences, referenceId);
+    if (result.removed === null) return null;
+
+    const updated: ScriptProject = {
+      ...project,
+      styleReferences: result.styleReferences,
+      updatedAt: now,
+    };
+    await this.persist(updated);
+    return updated;
   }
 
   private pathFor(id: string): string {
@@ -107,7 +170,9 @@ export class FileProjectRepository implements ProjectRepositoryPort {
 
   private async read(path: string): Promise<ScriptProject | null> {
     try {
-      return JSON.parse(await readFile(path, 'utf8')) as ScriptProject;
+      const parsed = JSON.parse(await readFile(path, 'utf8')) as ScriptProject;
+      // Proyectos anteriores a los assets: se normaliza para no repetir el `?.` en cada uso.
+      return { ...parsed, assets: parsed.assets ?? [], styleReferences: parsed.styleReferences ?? [] };
     } catch {
       return null;
     }
@@ -115,6 +180,10 @@ export class FileProjectRepository implements ProjectRepositoryPort {
 
   private async persist(project: ScriptProject): Promise<void> {
     await mkdir(this.dir, { recursive: true });
-    await writeFile(this.pathFor(project.id), JSON.stringify(project, null, 2), 'utf8');
+    const path = this.pathFor(project.id);
+    // Escritura atómica: un proceso que lea mientras se guarda nunca ve medio JSON.
+    const temp = `${path}.tmp`;
+    await writeFile(temp, JSON.stringify(project, null, 2), 'utf8');
+    await rename(temp, path);
   }
 }

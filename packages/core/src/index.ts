@@ -2,6 +2,9 @@
 export * from './domain/video-plan';
 export * from './domain/project';
 export * from './domain/script-project';
+export * from './domain/project-assets';
+export * from './domain/style-reference';
+export * from './domain/plan-edits';
 export * from './domain/plan-validator';
 export * from './domain/scene-timing';
 export * from './domain/cost-estimator';
@@ -17,6 +20,7 @@ export type { ProjectRepositoryPort } from './application/ports/project-reposito
 export * from './application/use-cases/generate-script';
 export * from './application/use-cases/compact-script';
 export * from './application/use-cases/save-plan';
+export * from './application/use-cases/record-scene-asset';
 export * from './application/use-cases/translate-plan';
 
 // Prompts (versionados con el contrato)

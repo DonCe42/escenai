@@ -1,4 +1,4 @@
-import { ProviderNotConfiguredError } from '@escenai/core';
+import { MAX_REFERENCE_IMAGES, ProviderNotConfiguredError } from '@escenai/core';
 import type { Aspect, GeneratedImage, ImageModelPort } from '@escenai/core';
 import { mintAccessToken, parseServiceAccount } from './vertex-credentials';
 
@@ -49,7 +49,7 @@ export class VertexImageModel implements ImageModelPort {
   async generate(input: {
     readonly prompt: string;
     readonly aspect: Aspect;
-    readonly referenceImage?: Uint8Array;
+    readonly referenceImages?: readonly Uint8Array[];
   }): Promise<GeneratedImage> {
     const fetchImpl = this.options.fetchImpl ?? fetch;
     const raw = await this.options.getCredentials().catch(() => {
@@ -63,11 +63,13 @@ export class VertexImageModel implements ImageModelPort {
     const url = `${baseUrl(location)}/projects/${account.project_id}/locations/${location}/publishers/google/models/${model}:generateContent`;
 
     const parts: unknown[] = [{ text: input.prompt }];
-    if (input.referenceImage !== undefined) {
+    // En orden: la primera referencia es la que fija el estilo. Se recorta al
+    // tope del modelo en vez de mandar una petición que el proveedor rechazaría.
+    for (const reference of (input.referenceImages ?? []).slice(0, MAX_REFERENCE_IMAGES)) {
       parts.push({
         inlineData: {
           mimeType: 'image/png',
-          data: Buffer.from(input.referenceImage).toString('base64'),
+          data: Buffer.from(reference).toString('base64'),
         },
       });
     }

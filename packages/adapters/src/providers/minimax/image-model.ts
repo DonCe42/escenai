@@ -26,7 +26,12 @@ export class MinimaxImageModel implements ImageModelPort {
   async generate(input: {
     readonly prompt: string;
     readonly aspect: Aspect;
-    readonly referenceImage?: Uint8Array;
+    /**
+     * Se acepta por contrato pero se ignora: `image-01` no admite referencias en
+     * `/v1/image_generation` (su referencia de sujeto es otra llamada). Mejor
+     * ignorarla que simular una consistencia que el modelo no está dando.
+     */
+    readonly referenceImages?: readonly Uint8Array[];
   }): Promise<GeneratedImage> {
     const fetchImpl = this.options.fetchImpl ?? fetch;
     const apiKey = await this.options.getApiKey().catch(() => {

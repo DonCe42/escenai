@@ -1,3 +1,5 @@
+import type { SceneAsset } from './project-assets';
+import type { StyleReference } from './style-reference';
 import type { VideoPlan } from './video-plan';
 
 export type VersionSource = 'generated' | 'compacted' | 'edited';
@@ -19,6 +21,16 @@ export interface ScriptProject {
   readonly updatedAt: string;
   readonly versions: readonly PlanVersion[];
   readonly activeVersionId: string;
+  /**
+   * Assets por escena (imagen, voz, clip). Opcional para leer los proyectos
+   * guardados antes de que existiera; el repositorio lo normaliza a [].
+   */
+  readonly assets?: readonly SceneAsset[];
+  /**
+   * Tablero de estilo: producto, personaje o logo que se pasa como referencia a
+   * cada escena. Opcional por el mismo motivo que `assets`.
+   */
+  readonly styleReferences?: readonly StyleReference[];
 }
 
 export interface ScriptProjectSummary {

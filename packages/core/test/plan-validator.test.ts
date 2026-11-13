@@ -103,4 +103,32 @@ describe('validateVideoPlan', () => {
       expect(codes).toContain(code);
     }
   });
+
+  it('acepta un estilo de subtítulo válido', () => {
+    const conEstilo = { ...validPlan(), captionStyle: 'bold' as const };
+    expect(validateVideoPlan(conEstilo).ok).toBe(true);
+  });
+
+  it('rechaza un estilo de subtítulo inventado', () => {
+    const malo = { ...validPlan(), captionStyle: 'neon' };
+    const result = validateVideoPlan(malo);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.message.includes('captionStyle'))).toBe(true);
+    }
+  });
+
+  it('acepta una pista de música válida', () => {
+    const conMusica = { ...validPlan(), musicTrack: 'upbeat' as const };
+    expect(validateVideoPlan(conMusica).ok).toBe(true);
+  });
+
+  it('rechaza una pista de música inventada', () => {
+    const malo = { ...validPlan(), musicTrack: 'reggaeton' };
+    const result = validateVideoPlan(malo);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.some((issue) => issue.message.includes('musicTrack'))).toBe(true);
+    }
+  });
 });

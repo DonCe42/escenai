@@ -42,12 +42,34 @@ export interface Scene {
   readonly duracionEstimadaS: number;
 }
 
+export type CaptionStyle = 'caja' | 'bold' | 'minimal';
+
+export const CAPTION_STYLES: readonly CaptionStyle[] = ['caja', 'bold', 'minimal'];
+
+/**
+ * Música de fondo. No la elige el modelo: es una decisión del usuario y se guarda con
+ * la versión para que el render repita exactamente lo que se oyó en el preview.
+ */
+/**
+ * Tope de imágenes de referencia por generación. Nano Banana 2.1 admite 14; se
+ * deja aquí para que el puerto y la interfaz no inventen límites distintos.
+ */
+export const MAX_REFERENCE_IMAGES = 14;
+
+export type MusicTrack = 'ninguna' | 'corporativo' | 'upbeat' | 'piano';
+
+export const MUSIC_TRACKS: readonly MusicTrack[] = ['ninguna', 'corporativo', 'upbeat', 'piano'];
+
 export interface VideoPlan {
   readonly version: 1;
   readonly locale: Locale;
   readonly titulo: string;
   readonly duracionObjetivoS: number;
   readonly styleToken: string;
+  /** Estilo de subtítulos. Opcional: los planes viejos usan 'caja'. */
+  readonly captionStyle?: CaptionStyle;
+  /** Pista de fondo. Opcional: los planes viejos van sin música. */
+  readonly musicTrack?: MusicTrack;
   readonly escenas: readonly Scene[];
 }
 

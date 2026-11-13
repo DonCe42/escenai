@@ -1,4 +1,4 @@
-import { LIMITS, MOTIONS, SCENE_ROLES, countWords } from './video-plan';
+import { CAPTION_STYLES, LIMITS, MOTIONS, MUSIC_TRACKS, SCENE_ROLES, countWords } from './video-plan';
 import type { Motion, SceneRole, VideoPlan } from './video-plan';
 
 export type PlanErrorCode =
@@ -21,7 +21,16 @@ export interface PlanIssue {
 
 export type PlanValidation = { readonly ok: true } | { readonly ok: false; readonly issues: readonly PlanIssue[] };
 
-const PLAN_KEYS = ['version', 'locale', 'titulo', 'duracionObjetivoS', 'styleToken', 'escenas'];
+const PLAN_KEYS = [
+  'version',
+  'locale',
+  'titulo',
+  'duracionObjetivoS',
+  'styleToken',
+  'captionStyle',
+  'musicTrack',
+  'escenas',
+];
 const SCENE_KEYS = [
   'id',
   'rol',
@@ -82,6 +91,16 @@ function schemaIssues(input: unknown): PlanIssue[] {
     bad('duracionObjetivoS debe ser un número positivo.');
   if (typeof input.styleToken !== 'string' || input.styleToken.trim().length === 0)
     bad('styleToken vacío.');
+  if (
+    input.captionStyle !== undefined &&
+    !CAPTION_STYLES.includes(input.captionStyle as (typeof CAPTION_STYLES)[number])
+  )
+    bad('captionStyle debe ser "caja", "bold" o "minimal".');
+  if (
+    input.musicTrack !== undefined &&
+    !MUSIC_TRACKS.includes(input.musicTrack as (typeof MUSIC_TRACKS)[number])
+  )
+    bad('musicTrack debe ser "ninguna", "corporativo", "upbeat" o "piano".');
 
   if (!Array.isArray(input.escenas)) {
     bad('escenas debe ser un arreglo.');
