@@ -190,9 +190,15 @@ importers:
       '@escenai/adapters':
         specifier: workspace:*
         version: link:../../packages/adapters
+      '@escenai/composition':
+        specifier: workspace:*
+        version: link:../../packages/composition
       '@escenai/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@remotion/player':
+        specifier: ^4.0.541
+        version: 4.0.541(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       next:
         specifier: ^15.1.4
         version: 15.5.29(@babel/core@7.29.13(supports-color@8.1.1))(@types/node@22.20.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -202,6 +208,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.3.1(react@19.3.1)
+      remotion:
+        specifier: ^4.0.541
+        version: 4.0.541(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.0.0
@@ -224,6 +233,9 @@ importers:
 
   apps/worker:
     dependencies:
+      '@escenai/composition':
+        specifier: workspace:*
+        version: link:../../packages/composition
       '@remotion/bundler':
         specifier: ^4.0.0
         version: 4.0.541(lightningcss@1.33.0)(postcss@8.5.32)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -265,6 +277,22 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.5)(lightningcss@1.33.0)(supports-color@7.2.0)(terser@5.51.2)
+
+  packages/composition:
+    dependencies:
+      react:
+        specifier: ^19.0.0
+        version: 19.3.1
+      remotion:
+        specifier: ^4.0.541
+        version: 4.0.541(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^19.0.2
+        version: 19.3.0
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
 
   packages/core:
     devDependencies:
