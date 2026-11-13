@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { PlanIssue, VideoPlan } from '@escenai/core';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -49,6 +50,7 @@ function useElapsed(active: boolean): number {
 }
 
 export function BriefForm({ locale, dict }: BriefFormProps) {
+  const router = useRouter();
   const [brief, setBrief] = useState<BriefState>(INITIAL);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<VideoPlan | null>(null);
@@ -127,7 +129,12 @@ export function BriefForm({ locale, dict }: BriefFormProps) {
           .then(async (saved) => {
             if (!saved.ok) return;
             const body = (await saved.json()) as { project?: { id: string } };
-            if (body.project?.id) setProjectId(body.project.id);
+            if (body.project?.id) {
+              setProjectId(body.project.id);
+              // El estudio es el destino: aquí el usuario ve escenas, coste y preview.
+              // El flujo largo de esta pantalla queda solo como entrada.
+              router.push(`/studio/${body.project.id}`);
+            }
           })
           .catch(() => undefined);
       }

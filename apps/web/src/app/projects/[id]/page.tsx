@@ -23,9 +23,17 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     <main className="min-h-screen">
       <SiteHeader locale={locale} dict={dict} />
       <div className="mx-auto w-full max-w-4xl px-6 pt-10 pb-24">
-        <Link href="/projects" className="text-xs text-[var(--muted)] hover:text-[var(--text)]">
-          ← {dict.projects.title}
-        </Link>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/projects" className="text-xs text-[var(--muted)] hover:text-[var(--text)]">
+            ← {dict.projects.title}
+          </Link>
+          <Link
+            href={`/studio/${project.id}`}
+            className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--accent-ink)] transition hover:brightness-110"
+          >
+            Abrir estudio
+          </Link>
+        </div>
 
         <h1 className="mt-4 text-3xl font-semibold tracking-tight">{project.nombre}</h1>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
